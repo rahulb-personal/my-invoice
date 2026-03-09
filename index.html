@@ -890,6 +890,14 @@
         }
 
         /* ── RESPONSIVE ── */
+        @media(max-width:850px) {
+            .document-container {
+                transform: scale(calc((100vw - 40px) / 794));
+                transform-origin: top left;
+                margin: 0;
+            }
+        }
+
         @media(max-width:600px) {
             .editor-bar {
                 padding: 10px 14px
@@ -1200,6 +1208,8 @@
             { title: 'TV Unit', rows: [{ desc: 'Main TV Console', l: '', h: '', w: '', price: '' }, { desc: 'Back Paneling', l: '', h: '', w: '', price: '' }] },
             { title: 'Kitchen', rows: [{ desc: 'Base unit', l: '', h: '', w: '', price: '' }, { desc: 'Backsplash', l: '', h: '', w: '', price: '' }, { desc: 'Loft', l: '', h: '', w: '', price: '' }, { desc: 'Dining storage', l: '', h: '', w: '', price: '' }, { desc: 'Crockery unit', l: '', h: '', w: '', price: '' }] },
             { title: 'Bedroom 1', rows: [{ desc: 'Wardrobe', l: '', h: '', w: '', price: '' }, { desc: 'Study unit', l: '', h: '', w: '', price: '' }, { desc: 'Dressing table', l: '', h: '', w: '', price: '' }, { desc: 'Bed', l: '', h: '', w: '', price: '' }] },
+            { title: 'Bedroom 2', rows: [{ desc: 'Wardrobe', l: '', h: '', w: '', price: '' }, { desc: 'Study unit', l: '', h: '', w: '', price: '' }, { desc: 'Dressing table', l: '', h: '', w: '', price: '' }, { desc: 'Bed', l: '', h: '', w: '', price: '' }] },
+            { title: 'Bedroom 3', rows: [{ desc: 'Wardrobe', l: '', h: '', w: '', price: '' }, { desc: 'Study unit', l: '', h: '', w: '', price: '' }, { desc: 'Dressing table', l: '', h: '', w: '', price: '' }, { desc: 'Bed', l: '', h: '', w: '', price: '' }] },
         ];
 
         function buildDOM() {
