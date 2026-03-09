@@ -742,21 +742,29 @@
             }
 
             .invoice-canvas {
-                overflow: visible;
-                padding: 0;
-                background: white
+                overflow: visible !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                background: white !important;
             }
 
             .document-container {
-                width: 210mm;
-                gap: 0
+                width: 210mm !important;
+                gap: 0 !important;
+                margin: 0 !important;
+                transform: none !important;
+                display: block !important;
             }
 
             .a4-page {
-                box-shadow: none;
-                page-break-after: always;
-                margin: 0;
-                padding: 15mm 20mm
+                box-shadow: none !important;
+                page-break-after: always !important;
+                page-break-inside: avoid !important;
+                margin: 0 !important;
+                padding: 15mm 20mm !important;
+                min-height: 297mm !important;
+                width: 210mm !important;
+                display: block !important;
             }
 
             .no-print-inv {
@@ -769,8 +777,8 @@
             }
 
             @page {
-                size: A4;
-                margin: 0
+                size: A4 portrait;
+                margin: 0;
             }
         }
 
