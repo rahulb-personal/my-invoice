@@ -891,8 +891,16 @@
 
         /* ── RESPONSIVE ── */
         @media(max-width:850px) {
+            .invoice-canvas {
+                padding: 10px;
+                overflow-x: hidden;
+            }
+
             .document-container {
-                transform: scale(calc((100vw - 40px) / 794));
+                zoom: calc((100vw - 20px) / 794);
+                -moz-transform: scale(calc((100vw - 20px) / 794));
+                -moz-transform-origin: top left;
+                transform: scale(calc((100vw - 20px) / 794));
                 transform-origin: top left;
                 margin: 0;
             }
