@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interior Design Quotation - Cloud9 Interiors</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --brand-peach: #F6D6B6;
+            --brand-blue: #9FEAE8;
+            --brand-lime: #E5EE8B;
+            --text-main: #2C2C2C;
+            --text-muted: #666666;
+            --border-light: #EAEAEA;
+            --bg-page: #F3F4F6;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-page);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .document-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            width: 210mm;
+        }
+
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            background: #FFFFFF;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            padding: 15mm 20mm;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            table,
+            th,
+            td {
+                border: 1px solid #CCC !important;
+            }
+
+            @page {
+                size: A4;
+                margin: 0;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+
+            .document-container {
+                gap: 0;
+            }
+
+            .a4-page {
+                margin: 0;
+                box-shadow: none;
+                width: 210mm;
+                min-height: 297mm;
+                page-break-after: always;
+                padding: 15mm 20mm;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .row-actions {
+                display: none !important;
+            }
+        }
+
+        /* Beautiful Header layout */
+        .header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--text-main);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .header-left {
+            display: flex;
+            flex-basis: 30%;
+        }
+
+        .header img.logo {
+            max-height: 70px;
+            /* Made slightly larger for presence */
+            object-fit: contain;
+        }
+
+        .header-center {
+            text-align: center;
+            flex-basis: 55%;
+            white-space: nowrap;
+        }
+
+        .company-name {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 0;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .company-address {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin: 4px 0 0 0;
+            font-weight: 400;
+        }
+
+        .header-right {
+            flex-basis: 30%;
+            text-align: right;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .designer-title {
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .designer-name {
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 14px;
+        }
+
+        /* Top Meta Details */
+        .top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            /* Align inputs to bottom */
+            margin-bottom: 25px;
+            padding: 0 10px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .meta-label {
+            font-weight: 600;
+            margin-right: 8px;
+            color: var(--text-main);
+            white-space: nowrap;
+        }
+
+        .meta-input {
+            border: none;
+            border-bottom: 1px dashed #CCC;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-main);
+            padding: 4px 8px;
+            background: transparent;
+            outline: none;
+        }
+
+        .meta-input:focus {
+            border-bottom-color: var(--brand-blue);
+            border-bottom-style: solid;
+        }
+
+        .input-name {
+            width: 350px;
+        }
+
+        /* Single long line for customer */
+        .input-date {
+            width: 130px;
+            text-align: center;
+        }
+
+        /* Quotation Title */
+        .title-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .doc-title {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 8px 25px;
+            background: var(--brand-peach);
+            color: var(--text-main);
+            display: inline-block;
+            border-radius: 4px;
+            box-shadow: 2px 2px 0 var(--text-main);
+        }
+
+        /* Minimalistic Dynamic Tables */
+        .section-wrapper {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .section-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .section-title-wrapper {
+            border-bottom: 3px solid var(--brand-lime);
+            padding-bottom: 2px;
+            display: inline-block;
+        }
+
+        .section-title-input {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            text-transform: uppercase;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            outline: none;
+            width: 15ch;
+            min-width: 60px;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+            transition: width 0.1s ease;
+        }
+
+        .section-title-input:hover,
+        .section-title-input:focus {
+            background-color: #FAFAFA;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            table-layout: fixed;
+            background: #FFF;
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border-light);
+            padding: 6px 4px;
+            text-align: center;
+            height: 32px;
+        }
+
+        th {
+            background-color: #FAFAFA;
+            color: var(--text-main);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 10.5px;
+            letter-spacing: 0.5px;
+        }
+
+        td.text-left {
+            text-align: left;
+            padding-left: 10px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 12px;
+            text-align: center;
+            color: var(--text-main);
+            outline: none;
+            padding: 4px;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            background: #FDFDFD;
+        }
+
+        input.item-desc {
+            text-align: left;
+            font-weight: 400;
+        }
+
+        input.item-total {
+            text-align: right;
+            font-weight: 500;
+            padding-right: 8px;
+        }
+
+        input::placeholder {
+            color: #BBB;
+            font-style: italic;
+        }
+
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Dynamic Row Controls (Add / Delete) */
+        .row-hover-controls {
+            position: absolute;
+            right: -25px;
+            /* places elements just outside the table row */
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            opacity: 0;
+            transition: opacity 0.2s;
+            gap: 4px;
+        }
+
+        .calc-row {
+            position: relative;
+        }
+
+        .calc-row:hover .row-hover-controls {
+            opacity: 1;
+        }
+
+        .icon-btn {
+            background: #FFF;
+            border: 1px solid var(--border-light);
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1;
+            padding-bottom: 2px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .icon-btn:hover {
+            background: #F0F0F0;
+            color: #000;
+        }
+
+        .del-btn:hover {
+            background: #fee2e2;
+            color: #ef4444;
+            border-color: #fca5a5;
+        }
+
+        .add-row-block {
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        .add-row-text-btn {
+            background: transparent;
+            border: dashed 1px var(--border-light);
+            color: var(--text-muted);
+            font-size: 11px;
+            border-radius: 4px;
+            padding: 4px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+        }
+
+        .add-row-text-btn:hover {
+            border-color: var(--brand-blue);
+            color: var(--text-main);
+            background: rgba(159, 234, 232, 0.1);
+        }
+
+        /* Totals */
+        .page-total {
+            text-align: right;
+            font-weight: 600;
+            font-size: 13px;
+            padding: 10px;
+            color: var(--text-main);
+            border-top: 1px solid var(--border-light);
+            margin-top: auto;
+            /* Pushes to bottom of page */
+        }
+
+        .grand-total-container {
+            margin-top: auto;
+            padding: 20px;
+            background-color: #FAFAFA;
+            border: 1px solid var(--border-light);
+            border-left: 4px solid var(--brand-blue);
+            text-align: right;
+        }
+
+        .grand-total-container>div {
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+
+        .grand-total {
+            font-size: 20px !important;
+            font-weight: 600 !important;
+            color: var(--text-main) !important;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        /* Floating Actions */
+        .action-bar {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-main);
+            background: #FFF;
+            border: 1px solid var(--border-light);
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
+        }
+
+        .btn-calc {
+            background: var(--brand-lime);
+            border-color: var(--brand-lime);
+        }
+
+        .btn-print {
+            background: var(--brand-blue);
+            border-color: var(--brand-blue);
+        }
+
+        /* Template container, hidden from view */
+        #templates {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="action-bar no-print">
+        <button class="btn btn-print" onclick="resetQuotation()"
+            style="background:#fff2f2; border-color:#fca5a5; color:#ef4444;">⚠ Reset</button>
+        <button class="btn btn-calc" onclick="calculateAll()">⟳ Calculate</button>
+        <button class="btn btn-print" onclick="window.print()">🖨️ Print Quotation</button>
+    </div>
+
+    <!-- The single source container where pages are dynamically generated -->
+    <div id="print-wrapper">
+        <div class="document-container" id="document-container"></div>
+        <div class="add-section-block no-print" style="text-align: center; margin: 30px 0;">
+            <button class="add-row-text-btn" style="font-size: 14px; padding: 10px 24px;"
+                onclick="window.addSection()">+ Add New Table</button>
+        </div>
+    </div>
+
+    <!-- Hidden Templates used by JavaScript to build pages dynamically -->
+    <div id="templates">
+        <!-- New Page Skeleton -->
+        <div id="tpl-page" class="a4-page">
+            <div class="page-content">
+                <!-- Data will be injected here during pagination -->
+            </div>
+
+            <div class="page-footer">
+                <div class="page-total">
+                    Current Page Total: ₹ <span class="page-sum-text">0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header content (Injected into Page 1 mostly, but can be everywhere if needed) -->
+        <div id="tpl-header">
+            <div class="header">
+                <div class="header-left">
+                    <img src="./cloud9logo.JPG" alt="Cloud9 Logo" class="logo" onerror="this.style.display='none'">
+                </div>
+                <div class="header-center">
+                    <h1 class="company-name">Cloud9 Interiors</h1>
+                    <p class="company-address">ASR complex, 3rd floor, Shastrinagar, Nirmal</p>
+                </div>
+                <div class="header-right">
+                    <div class="designer-name">Rahul Balashanker</div>
+                    <div class="designer-title">Interior Designer</div>
+                </div>
+            </div>
+
+            <div class="top-row">
+                <div class="meta-item">
+                    <span class="meta-label">Customer Name:</span>
+                    <input type="text" class="meta-input input-name" placeholder="Enter Full Client Name">
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Date:</span>
+                    <input type="text" class="meta-input input-date" placeholder="DD / MM / YYYY">
+                </div>
+            </div>
+
+            <div class="title-container">
+                <div class="doc-title">Interior Quotation</div>
+            </div>
+        </div>
+
+        <!-- Minimal Header for Page 2+ -->
+        <div id="tpl-minimal-header">
+            <div class="header" style="margin-bottom: 20px; padding-bottom: 10px;">
+                <div class="header-left" style="flex-basis: 15%;">
+                    <img src="./cloud9logo.JPG" alt="Cloud9 Logo" class="logo" style="max-height: 40px;"
+                        onerror="this.style.display='none'">
+                </div>
+                <div class="header-center" style="flex-basis: 70%;">
+                    <h1 class="company-name" style="font-size: 20px;">Cloud9 Interiors</h1>
+                </div>
+                <div class="header-right" style="flex-basis: 15%;"></div>
+            </div>
+        </div>
+
+        <!-- Section Table HTML -->
+        <div id="tpl-section">
+            <div class="section-wrapper" data-section-name="">
+                <div class="section-header-row">
+                    <div class="section-title-wrapper">
+                        <input type="text" class="section-title-input calc-input" placeholder="Table Name..."
+                            oninput="this.style.width = Math.max(7, this.value.length + 1) + 'ch';">
+                    </div>
+                    <div class="icon-btn del-btn no-print" title="Delete Table" onclick="deleteSection(this)">×</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 32%;">Description</th>
+                            <th style="width: 10%;">Length</th>
+                            <th style="width: 10%;">Height</th>
+                            <th style="width: 10%;">Width</th>
+                            <th style="width: 18%;">Total Sft/Cft</th>
+                            <th style="width: 20%;">Total Price (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="calc-table">
+                        <!-- Rows go here -->
+                    </tbody>
+                </table>
+                <div class="add-row-block no-print">
+                    <button class="add-row-text-btn" onclick="addNewRow(this)">+ Add Row</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Row HTML -->
+        <table>
+            <tbody id="tpl-row">
+                <tr class="calc-row">
+                    <td class="text-left"><input type="text" class="item-desc" placeholder="Item description..."></td>
+                    <td><input type="number" step="any" class="calc-input l"></td>
+                    <td><input type="number" step="any" class="calc-input h"></td>
+                    <td><input type="number" step="any" class="calc-input w"></td>
+                    <td><input type="text" class="readonly sqft" readonly></td>
+                    <td><input type="number" step="any" class="calc-input item-total"></td>
+
+                    <td class="row-hover-controls no-print"
+                        style="position: absolute; border: none; width: auto; padding: 0;">
+                        <div class="icon-btn del-btn" title="Delete Row" onclick="deleteRow(this)">×</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Grand Total HTML -->
+        <div id="tpl-grand-total">
+            <div class="grand-total-container">
+                <div class="summary-lines"></div>
+                <div class="grand-total">GRAND TOTAL: ₹ <span id="masterTotal">0.00</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DYNAMIC PAGINATION ENGINE & CALC LOGIC -->
+    <script>
+        // MASTER STATE: This holds all the logical data. 
+        // We re-render the HTML based on this state if it overflows.
+        const DEFAULT_QUOTATION_DATA = [
+            {
+                title: 'TV Unit',
+                rows: [
+                    { desc: 'Main TV Console', l: '', h: '', w: '', price: '' },
+                    { desc: 'Back Paneling', l: '', h: '', w: '', price: '' }
+                ]
+            },
+            {
+                title: 'Kitchen',
+                rows: [
+                    { desc: 'Base unit', l: '', h: '', w: '', price: '' },
+                    { desc: 'Backsplash', l: '', h: '', w: '', price: '' },
+                    { desc: 'Loft', l: '', h: '', w: '', price: '' },
+                    { desc: 'Dining storage', l: '', h: '', w: '', price: '' },
+                    { desc: 'Crockery unit', l: '', h: '', w: '', price: '' }
+                ]
+            },
+            {
+                title: 'Bedroom 1',
+                rows: [
+                    { desc: 'Wardrobe', l: '', h: '', w: '', price: '' },
+                    { desc: 'Study unit', l: '', h: '', w: '', price: '' },
+                    { desc: 'Dressing table', l: '', h: '', w: '', price: '' },
+                    { desc: 'Bed', l: '', h: '', w: '', price: '' }
+                ]
+            },
+            {
+                title: 'Bedroom 2',
+                rows: [
+                    { desc: 'Wardrobe', l: '', h: '', w: '', price: '' },
+                    { desc: 'Study unit', l: '', h: '', w: '', price: '' },
+                    { desc: 'Dressing table', l: '', h: '', w: '', price: '' },
+                    { desc: 'Bed', l: '', h: '', w: '', price: '' }
+                ]
+            },
+            {
+                title: 'Bedroom 3',
+                rows: [
+                    { desc: 'Wardrobe', l: '', h: '', w: '', price: '' },
+                    { desc: 'Study unit', l: '', h: '', w: '', price: '' },
+                    { desc: 'Dressing table', l: '', h: '', w: '', price: '' },
+                    { desc: 'Bed', l: '', h: '', w: '', price: '' }
+                ]
+            }
+        ];
+
+        let quotationData = JSON.parse(JSON.stringify(DEFAULT_QUOTATION_DATA));
+
+        // Global persistent data like Name/Date
+        let customerNameVal = '';
+        let dateVal = '';
+
+        // A4 Height constraint (rough estimation in pixels for safety checking before actual print breakdown)
+        // 297mm approx 1122px. We leave a huge margin for headers and footers.
+        const PAGE_SAFE_HEIGHT = 880;
+
+        function buildDOMFromState() {
+            // Save current meta values before destroying dom
+            const nameEl = document.querySelector('.input-name');
+            const dateEl = document.querySelector('.input-date');
+            if (nameEl) customerNameVal = nameEl.value;
+            if (dateEl) dateVal = dateEl.value;
+
+            const container = document.getElementById('document-container');
+            container.innerHTML = ''; // wipe UI
+
+            let currentPageUI = createEmptyPage(1);
+            let contentArea = currentPageUI.querySelector('.page-content');
+            container.appendChild(currentPageUI);
+
+            let pageNum = 1;
+
+            // Iterate over every section in state
+            quotationData.forEach((section, secIdx) => {
+
+                let sectionUI = createSectionDOM(section.title, secIdx);
+                const tbody = sectionUI.querySelector('tbody');
+
+                // Append all rows for this section
+                section.rows.forEach((rowObj, rowIdx) => {
+                    const rowUI = createRowDOM(rowObj, secIdx, rowIdx);
+                    tbody.appendChild(rowUI);
+                });
+
+                // Temporarily attach to see if it overflows the page
+                contentArea.appendChild(sectionUI);
+
+                // Wait for layout calculation... if this section makes the page too tall, move it to the next page!
+                // NOTE: Using a simple heuristic for height tracking
+                const currentHeight = contentArea.getBoundingClientRect().height;
+
+                // If the height exceeds safe zone, move this specific section to a NEW page.
+                // Exception: if it's the very first block on the very first page, leave it.
+                if (currentHeight > PAGE_SAFE_HEIGHT && contentArea.children.length > 1) {
+                    contentArea.removeChild(sectionUI); // take it off this page
+
+                    // Create new page
+                    pageNum++;
+                    currentPageUI = createEmptyPage(pageNum);
+                    contentArea = currentPageUI.querySelector('.page-content');
+                    container.appendChild(currentPageUI);
+
+                    // Attach section to new page
+                    contentArea.appendChild(sectionUI);
+                }
+            });
+
+            // Append Grand Total to the very last page
+            const grandTotalTpl = document.getElementById('tpl-grand-total').cloneNode(true);
+            contentArea.appendChild(grandTotalTpl.firstElementChild);
+
+            // Re-bind global listeners
+            document.querySelectorAll('.calc-input, .item-desc').forEach(inp => {
+                inp.addEventListener('input', debounceSyncStateAndCalc);
+            });
+
+            const newNameEl = document.querySelector('.input-name');
+            const newDateEl = document.querySelector('.input-date');
+            if (newNameEl) { newNameEl.value = customerNameVal; newNameEl.addEventListener('input', e => customerNameVal = e.target.value); }
+            if (newDateEl) { newDateEl.value = dateVal; newDateEl.addEventListener('input', e => dateVal = e.target.value); }
+
+            calculateAll();
+        }
+
+        function createEmptyPage(pageNum) {
+            const pageDiv = document.getElementById('tpl-page').cloneNode(true);
+            pageDiv.removeAttribute('id'); // Ensure no duplicate IDs
+            const contentArea = pageDiv.querySelector('.page-content');
+
+            if (pageNum === 1) {
+                const headerTpl = document.getElementById('tpl-header').cloneNode(true);
+                contentArea.appendChild(headerTpl);
+            } else {
+                const minHeader = document.getElementById('tpl-minimal-header').cloneNode(true);
+                contentArea.appendChild(minHeader);
+            }
+            return pageDiv;
+        }
+
+        function createSectionDOM(title, secIdx) {
+            const sec = document.getElementById('tpl-section').firstElementChild.cloneNode(true);
+            sec.dataset.secIdx = secIdx;
+            const inputEl = sec.querySelector('.section-title-input');
+            inputEl.value = title;
+            inputEl.style.width = Math.max(7, title.length + 1) + 'ch';
+            return sec;
+        }
+
+        function createRowDOM(rowObj, secIdx, rowIdx) {
+            const tr = document.getElementById('tpl-row').cloneNode(true).querySelector('tr').cloneNode(true);
+            tr.dataset.secIdx = secIdx;
+            tr.dataset.rowIdx = rowIdx;
+
+            const descEl = tr.querySelector('.item-desc');
+            const lEl = tr.querySelector('.l');
+            const hEl = tr.querySelector('.h');
+            const wEl = tr.querySelector('.w');
+            const priceEl = tr.querySelector('.item-total');
+
+            if (descEl) descEl.value = rowObj.desc;
+            if (lEl) lEl.value = rowObj.l;
+            if (hEl) hEl.value = rowObj.h;
+            if (wEl) wEl.value = rowObj.w;
+            if (priceEl) priceEl.value = rowObj.price;
+            return tr;
+        }
+
+        /* --- Actions --- */
+        let syncTimeout;
+        function debounceSyncStateAndCalc(e) {
+            // First run math calc locally for speedy feel
+            localCalcRow(e.target.closest('tr'));
+
+            // Then Sync state fully in background to hold data
+            clearTimeout(syncTimeout);
+            syncTimeout = setTimeout(() => {
+                syncUItoState();
+            }, 500);
+        }
+
+        function syncUItoState() {
+            // reads UI back into state
+            document.querySelectorAll('.section-wrapper').forEach(secUI => {
+                const sIdx = secUI.dataset.secIdx;
+                if (sIdx == null || sIdx === "") return;
+
+                const titleInput = secUI.querySelector('.section-title-input');
+                if (quotationData[sIdx] && titleInput) {
+                    quotationData[sIdx].title = titleInput.value;
+                }
+
+                const rowsData = [];
+                secUI.querySelectorAll('.calc-row').forEach(rowUI => {
+                    const descEl = rowUI.querySelector('.item-desc');
+                    const lEl = rowUI.querySelector('.l');
+                    const hEl = rowUI.querySelector('.h');
+                    const wEl = rowUI.querySelector('.w');
+                    const priceEl = rowUI.querySelector('.item-total');
+
+                    if (!descEl) return; // skip if template row
+
+                    rowsData.push({
+                        desc: descEl.value,
+                        l: lEl ? lEl.value : '',
+                        h: hEl ? hEl.value : '',
+                        w: wEl ? wEl.value : '',
+                        price: priceEl ? priceEl.value : ''
+                    });
+                });
+                if (quotationData[sIdx]) {
+                    quotationData[sIdx].rows = rowsData;
+                }
+            });
+
+            calculateAll(); // Update totals
+            saveToLocal(); // Persist memory
+        }
+
+        function saveToLocal() {
+            const dataToSave = {
+                qrData: quotationData,
+                name: customerNameVal,
+                date: dateVal
+            };
+            localStorage.setItem('cloud9_quotation_save', JSON.stringify(dataToSave));
+        }
+
+        function loadFromLocal() {
+            const saved = localStorage.getItem('cloud9_quotation_save');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.qrData) quotationData = parsed.qrData;
+                    if (parsed.name) customerNameVal = parsed.name;
+                    if (parsed.date) dateVal = parsed.date;
+                } catch (e) {
+                    console.error("Failed to load local save", e);
+                }
+            }
+        }
+
+        window.resetQuotation = function () {
+            if (confirm("Are you sure you want to completely erase the quotation data and start over?")) {
+                localStorage.removeItem('cloud9_quotation_save');
+                quotationData = JSON.parse(JSON.stringify(DEFAULT_QUOTATION_DATA));
+                customerNameVal = '';
+                dateVal = '';
+                buildDOMFromState();
+            }
+        }
+
+        window.addNewRow = function (btnElem) {
+            syncUItoState(); // Save current work
+            const secUI = btnElem.closest('.section-wrapper');
+            const sIdx = secUI.dataset.secIdx;
+
+            // Add blank object to state
+            quotationData[sIdx].rows.push({ desc: '', l: '', h: '', w: '', price: '' });
+
+            // Re-render
+            buildDOMFromState();
+        }
+
+        window.deleteRow = function (btnElem) {
+            syncUItoState();
+            const rowUI = btnElem.closest('tr');
+            const sIdx = rowUI.dataset.secIdx;
+            const rIdx = rowUI.dataset.rowIdx;
+
+            // remove from state array
+            quotationData[sIdx].rows.splice(rIdx, 1);
+
+            buildDOMFromState();
+        }
+
+        window.addSection = function () {
+            syncUItoState();
+            quotationData.push({
+                title: 'New Area',
+                rows: [
+                    { desc: '', l: '', h: '', w: '', price: '' }
+                ]
+            });
+            buildDOMFromState();
+        }
+
+        window.deleteSection = function (btnElem) {
+            if (confirm("Are you sure you want to delete this entire table?")) {
+                syncUItoState();
+                const secUI = btnElem.closest('.section-wrapper');
+                const sIdx = secUI.dataset.secIdx;
+                quotationData.splice(sIdx, 1);
+                buildDOMFromState();
+            }
+        }
+
+
+        /* --- Calculations --- */
+        function formatMoney(amount) {
+            return parseFloat(amount).toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function localCalcRow(rowUI) {
+            const lEl = rowUI.querySelector('.l');
+            const hEl = rowUI.querySelector('.h');
+            const wEl = rowUI.querySelector('.w');
+
+            if (!lEl || !hEl || !wEl) return;
+
+            const lInput = lEl.value;
+            const hInput = hEl.value;
+            const wInput = wEl.value;
+
+            const l = parseFloat(lInput) || 0;
+            const h = parseFloat(hInput) || 0;
+            const w = parseFloat(wInput) || 0;
+
+            let sftCft = 0;
+            let presentDims = 0;
+            if (lInput !== '') presentDims++;
+            if (hInput !== '') presentDims++;
+            if (wInput !== '') presentDims++;
+
+            if (presentDims === 3) sftCft = l * h * w;
+            else if (presentDims === 2) {
+                if (lInput !== '' && hInput !== '') sftCft = l * h;
+                else if (lInput !== '' && wInput !== '') sftCft = l * w;
+                else if (hInput !== '' && wInput !== '') sftCft = h * w;
+            }
+            else if (presentDims === 1) sftCft = l > 0 ? l : (h > 0 ? h : w);
+
+            if (sftCft > 0) {
+                const sqftEl = rowUI.querySelector('.sqft');
+                if (sqftEl) sqftEl.value = sftCft.toFixed(2);
+            } else {
+                const sqftEl = rowUI.querySelector('.sqft');
+                if (sqftEl) sqftEl.value = '';
+            }
+        }
+
+        function calculateAll() {
+            let grandTotal = 0;
+            let pageSummaries = [];
+
+            const pages = document.querySelectorAll('.a4-page:not(#tpl-page)');
+
+            pages.forEach((page, index) => {
+                let pageTotal = 0;
+                const rows = page.querySelectorAll('.calc-row');
+
+                rows.forEach(row => {
+                    localCalcRow(row); // ensure sqft is updated
+                    const manualPriceEl = row.querySelector('.item-total');
+                    if (!manualPriceEl) return;
+
+                    const manualPriceInput = manualPriceEl.value;
+                    const manualPrice = parseFloat(manualPriceInput) || 0;
+                    if (manualPrice > 0) pageTotal += manualPrice;
+                });
+
+                page.querySelector('.page-sum-text').innerText = formatMoney(pageTotal);
+                grandTotal += pageTotal;
+                pageSummaries.push(pageTotal);
+            });
+
+            // Update Grand Total Box on last page
+            const summaryContainer = document.querySelector('.summary-lines');
+            if (summaryContainer) {
+                summaryContainer.innerHTML = '';
+                pageSummaries.forEach((sum, idx) => {
+                    summaryContainer.innerHTML += `<div>Page ${idx + 1}: ₹ ${formatMoney(sum)}</div>`;
+                });
+            }
+
+            const mTotal = document.getElementById('masterTotal');
+            if (mTotal) mTotal.innerText = formatMoney(grandTotal);
+        }
+
+        // Initialize!
+        window.addEventListener('DOMContentLoaded', () => {
+            loadFromLocal();
+            buildDOMFromState();
+        });
+
+        // Trigger safety check before printing to ensure any newly added massive rows break properly
+        window.addEventListener("beforeprint", () => {
+            syncUItoState();
+            buildDOMFromState();
+        });
+
+    </script>
+</body>
+
+</html>
