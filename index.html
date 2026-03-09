@@ -1,661 +1,1384 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="C9 Invoices">
-<meta name="theme-color" content="#0F172A">
-<meta name="description" content="Professional invoice manager for Cloud9 Interiors">
-<title>Cloud9 Interiors — Invoice Manager</title>
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="Invoice files/cloud9logo.JPG">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg-base: #0F172A;
-  --bg-card: #1E293B;
-  --bg-card2: #263348;
-  --bg-surface: #334155;
-  --accent: #9FEAE8;
-  --accent2: #F6D6B6;
-  --accent3: #E5EE8B;
-  --text-primary: #F1F5F9;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
-  --border: rgba(255,255,255,0.07);
-  --border-accent: rgba(159,234,232,0.3);
-  --danger: #EF4444;
-  --success: #22C55E;
-  --radius: 16px;
-  --radius-sm: 10px;
-  --shadow: 0 4px 24px rgba(0,0,0,0.4);
-  --shadow-card: 0 2px 12px rgba(0,0,0,0.3);
-  --font: 'Inter', sans-serif;
-  --font2: 'Poppins', sans-serif;
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html{height:100%;scroll-behavior:smooth}
-body{font-family:var(--font);background:var(--bg-base);color:var(--text-primary);min-height:100vh;overscroll-behavior:none}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="C9 Invoices">
+    <meta name="theme-color" content="#F3F4F6">
+    <meta name="description" content="Professional invoice manager for Cloud9 Interiors">
+    <title>Cloud9 Interiors — Invoice Manager</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="Invoice files/cloud9logo.JPG">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            /* Cloud9 Brand Colors */
+            --brand-peach: #F6D6B6;
+            --brand-blue: #9FEAE8;
+            --brand-lime: #E5EE8B;
 
-/* ── LAYOUT ── */
-#app{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
+            /* Light Theme Layout */
+            --bg-page: #F3F4F6;
+            --bg-card: #FFFFFF;
+            --text-main: #2C2C2C;
+            --text-muted: #666666;
+            --border-light: #EAEAEA;
+            --danger: #EF4444;
+            --success: #22C55E;
 
-/* ── TOP NAV ── */
-.topnav{
-  position:sticky;top:0;z-index:100;
-  background:rgba(15,23,42,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);
-  padding:calc(var(--safe-top) + 10px) 20px 10px;
-  display:flex;align-items:center;gap:12px;
-}
-.topnav-logo{width:36px;height:36px;border-radius:10px;object-fit:cover;border:1px solid var(--border-accent)}
-.topnav-title{font-family:var(--font2);font-size:17px;font-weight:700;color:var(--text-primary);flex:1}
-.topnav-title span{color:var(--accent);font-size:11px;display:block;font-weight:400;font-family:var(--font);letter-spacing:.5px}
-.nav-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text-primary);border-radius:var(--radius-sm);padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font);transition:all .2s;white-space:nowrap}
-.nav-btn:hover{background:var(--bg-surface);border-color:var(--accent)}
-.nav-btn.primary{background:var(--accent);color:#0F172A;border-color:var(--accent);font-weight:600}
-.nav-btn.primary:hover{background:#7dd8d6;box-shadow:0 0 20px rgba(159,234,232,0.3)}
+            --radius: 12px;
+            --radius-sm: 6px;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.08);
 
-/* ── SCREENS ── */
-.screen{display:none;flex:1;flex-direction:column;padding:24px 20px calc(var(--safe-bottom)+20px)}
-.screen.active{display:flex}
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
 
-/* ── DASHBOARD ── */
-.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
-.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 14px;text-align:center;position:relative;overflow:hidden}
-.stat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--accent-color,var(--accent)) 0%,transparent 60%);opacity:.06}
-.stat-val{font-family:var(--font2);font-size:22px;font-weight:800;color:var(--text-primary);line-height:1}
-.stat-lbl{font-size:10px;color:var(--text-secondary);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
-.stat-card.s1{--accent-color:var(--accent)}
-.stat-card.s2{--accent-color:var(--accent2)}
-.stat-card.s3{--accent-color:var(--accent3)}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent
+        }
 
-.section-label{font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+        html {
+            height: 100%;
+            scroll-behavior: smooth
+        }
 
-.invoice-list{display:flex;flex-direction:column;gap:12px;flex:1}
-.invoice-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
-.invoice-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:.6;border-radius:2px}
-.invoice-card:hover{background:var(--bg-card2);border-color:var(--border-accent);transform:translateY(-1px);box-shadow:var(--shadow-card)}
-.inv-avatar{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,rgba(159,234,232,.2),rgba(159,234,232,.05));border:1px solid var(--border-accent);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.inv-info{flex:1;min-width:0}
-.inv-name{font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.inv-date{font-size:12px;color:var(--text-secondary);margin-top:2px}
-.inv-meta{text-align:right;flex-shrink:0}
-.inv-amount{font-size:15px;font-weight:700;color:var(--accent);font-family:var(--font2)}
-.inv-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;margin-top:3px;font-weight:500}
-.badge-saved{background:rgba(34,197,94,.15);color:#22C55E;border:1px solid rgba(34,197,94,.2)}
-.inv-actions{display:flex;gap:6px;flex-shrink:0}
-.ic-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg-surface);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all .2s}
-.ic-btn:hover{background:var(--danger);color:#fff;border-color:var(--danger)}
-.ic-btn.edit:hover{background:var(--accent);color:#0F172A;border-color:var(--accent)}
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-page);
+            color: var(--text-main);
+            min-height: 100vh;
+            overscroll-behavior: none
+        }
 
-.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:60px 20px;text-align:center}
-.empty-icon{font-size:56px;opacity:.3}
-.empty-title{font-size:18px;font-weight:600;color:var(--text-secondary)}
-.empty-sub{font-size:14px;color:var(--text-muted);max-width:240px}
+        /* ── LAYOUT ── */
+        #app {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            min-height: 100dvh
+        }
 
-/* ── EDITOR SCREEN ── */
-#editor-screen{padding:0}
-.editor-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.editor-bar{display:flex;align-items:center;gap:10px;padding:14px 20px;background:var(--bg-card);border-bottom:1px solid var(--border);flex-wrap:wrap}
-.editor-bar h2{font-size:15px;font-weight:700;flex:1;color:var(--text-primary)}
-.edbtn{padding:8px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:var(--font);transition:all .2s;display:flex;align-items:center;gap:5px}
-.edbtn-calc{background:var(--accent3);color:#1a1a00}
-.edbtn-save{background:var(--success);color:#fff}
-.edbtn-print{background:var(--accent);color:#0F172A}
-.edbtn-reset{background:rgba(239,68,68,.15);color:var(--danger);border:1px solid rgba(239,68,68,.2)}
-.edbtn:hover{opacity:.85;transform:translateY(-1px)}
+        /* ── TOP NAV (Clean, Light, Not sticky to avoid overlap) ── */
+        .topnav {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-light);
+            padding: calc(var(--safe-top) + 15px) 20px 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: var(--shadow-sm);
+        }
 
-/* The invoice preview lives inside an iframe-like scrollable */
-.invoice-canvas{flex:1;overflow-y:auto;overflow-x:auto;-webkit-overflow-scrolling:touch;background:#E8E8E8;padding:20px}
+        .topnav-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-main);
+            flex: 1;
+            line-height: 1.2
+        }
 
-/* ── INVOICE DOC (inside canvas) ── */
-.document-container{display:flex;flex-direction:column;gap:24px;width:210mm;margin:0 auto}
-.a4-page{width:210mm;min-height:297mm;background:#FFFFFF;box-shadow:0 4px 20px rgba(0,0,0,.2);padding:15mm 18mm;display:flex;flex-direction:column}
+        .topnav-title span {
+            color: var(--text-muted);
+            font-size: 12px;
+            display: block;
+            font-weight: 400;
+            letter-spacing: 0.5px
+        }
 
-/* Invoice typography & layout — keep brand identity from original */
-.header{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:2px solid #2C2C2C;padding-bottom:14px;margin-bottom:24px}
-.header-left{flex-basis:28%}
-.header img.logo{max-height:65px;object-fit:contain}
-.header-center{text-align:center;flex-basis:50%;white-space:nowrap}
-.company-name{font-family:var(--font2);font-size:28px;font-weight:800;color:#2C2C2C;margin:0;letter-spacing:1.5px;text-transform:uppercase}
-.company-address{font-size:10.5px;color:#666;margin:3px 0 0;font-weight:400}
-.header-right{flex-basis:22%;text-align:right;font-size:12px;line-height:1.5}
-.designer-name{font-weight:700;color:#2C2C2C;font-size:13px}
-.designer-title{color:#666;font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+        .nav-btn {
+            background: #FFF;
+            border: 1px solid var(--border-light);
+            color: var(--text-main);
+            border-radius: 30px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all .2s;
+            white-space: nowrap;
+            box-shadow: var(--shadow-sm)
+        }
 
-.top-row{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px;padding:0 8px}
-.meta-item{display:flex;align-items:center;font-size:13px;color:#2C2C2C}
-.meta-label{font-weight:600;margin-right:8px;white-space:nowrap}
-.meta-input{border:none;border-bottom:1px dashed #CCC;font-family:'Poppins',sans-serif;font-size:13px;font-weight:500;color:#2C2C2C;padding:3px 8px;background:transparent;outline:none;width:300px}
-.meta-input:focus{border-bottom:1px solid #9FEAE8}
-.input-date{width:130px;text-align:center}
+        .nav-btn:hover {
+            background: #FAFAFA;
+            border-color: #CCC
+        }
 
-.title-container{text-align:center;margin-bottom:28px}
-.doc-title{font-size:14px;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:7px 22px;background:#F6D6B6;color:#2C2C2C;display:inline-block;border-radius:4px;box-shadow:2px 2px 0 #2C2C2C}
+        .nav-btn.primary {
+            background: var(--brand-blue);
+            border-color: var(--brand-blue);
+            font-weight: 600;
+            color: #1A1A1A
+        }
 
-.section-wrapper{margin-bottom:22px;position:relative}
-.section-header-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
-.section-title-wrapper{border-bottom:3px solid #E5EE8B;padding-bottom:2px;display:inline-block}
-.section-title-input{font-size:13px;font-weight:600;color:#2C2C2C;text-transform:uppercase;border:none;background:transparent;font-family:'Poppins',sans-serif;outline:none;width:15ch;min-width:60px;padding:0}
+        .nav-btn.primary:hover {
+            background: #8CE0DE;
+            transform: translateY(-1px)
+        }
 
-table{width:100%;border-collapse:collapse;font-size:11.5px;table-layout:fixed;background:#FFF}
-th,td{border:1px solid #EAEAEA;padding:5px 4px;text-align:center;height:30px}
-th{background:#FAFAFA;color:#2C2C2C;font-weight:600;text-transform:uppercase;font-size:10px;letter-spacing:.5px}
-td.text-left{text-align:left;padding-left:10px}
-input[type="text"],input[type="number"]{width:100%;border:none;background:transparent;font-family:'Poppins',sans-serif;font-size:11.5px;text-align:center;color:#2C2C2C;outline:none;padding:3px}
-input[type="text"]:focus,input[type="number"]:focus{background:#FDFDFD}
-input.item-desc{text-align:left}
-input.item-total{text-align:right;font-weight:500;padding-right:6px}
-input::placeholder{color:#BBB;font-style:italic}
-input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+        /* ── SCREENS ── */
+        .screen {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            padding: 24px 20px calc(var(--safe-bottom)+20px);
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%
+        }
 
-.row-hover-controls{position:absolute;right:-26px;top:50%;transform:translateY(-50%);display:flex;opacity:0;transition:opacity .2s;gap:3px}
-.calc-row{position:relative}
-.calc-row:hover .row-hover-controls{opacity:1}
-.icon-btn{background:#FFF;border:1px solid #EAEAEA;width:20px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:50%;cursor:pointer;color:#666;font-size:13px;line-height:1;padding-bottom:1px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-.icon-btn:hover{background:#F0F0F0;color:#000}
-.del-btn:hover{background:#fee2e2;color:#ef4444;border-color:#fca5a5}
-.add-row-block{text-align:right;margin-top:4px}
-.add-row-text-btn{background:transparent;border:1px dashed #EAEAEA;color:#888;font-size:10.5px;border-radius:4px;padding:3px 10px;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;font-family:'Poppins',sans-serif;font-weight:500}
-.add-row-text-btn:hover{border-color:#9FEAE8;color:#2C2C2C;background:rgba(159,234,232,.1)}
+        .screen.active {
+            display: flex
+        }
 
-.page-total{text-align:right;font-weight:600;font-size:12px;padding:8px;color:#2C2C2C;border-top:1px solid #EAEAEA;margin-top:auto}
-.grand-total-container{margin-top:auto;padding:18px;background:#FAFAFA;border:1px solid #EAEAEA;border-left:4px solid #9FEAE8;text-align:right}
-.grand-total-container>div{font-size:12px;margin-bottom:5px;color:#666}
-.grand-total{font-size:18px!important;font-weight:600!important;color:#2C2C2C!important;margin-top:10px;padding-top:10px;border-top:1px solid #EAEAEA}
+        /* ── DASHBOARD ── */
+        .section-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid var(--border-light);
+            padding-bottom: 8px
+        }
 
-.no-print-inv{} /* shown in editor */
+        .invoice-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1
+        }
 
-@media print{
-  #app>*:not(#editor-screen){display:none!important}
-  .editor-bar,.topnav{display:none!important}
-  .invoice-canvas{overflow:visible;padding:0;background:white}
-  .document-container{width:210mm;gap:0}
-  .a4-page{box-shadow:none;page-break-after:always;margin:0}
-  .no-print-inv{display:none!important}
-  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
-  @page{size:A4;margin:0}
-}
+        .invoice-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all .2s;
+            box-shadow: var(--shadow-sm)
+        }
 
-/* ── MODAL ── */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px)}
-.modal-bg.open{display:flex}
-.modal{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:100%;max-width:360px;box-shadow:var(--shadow)}
-.modal h3{font-size:17px;font-weight:700;margin-bottom:6px;color:var(--text-primary)}
-.modal p{font-size:13px;color:var(--text-secondary);margin-bottom:20px}
-.modal-input{width:100%;background:var(--bg-surface);border:1px solid var(--border);color:var(--text-primary);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;outline:none;font-family:var(--font);margin-bottom:16px}
-.modal-input:focus{border-color:var(--accent)}
-.modal-btns{display:flex;gap:10px;justify-content:flex-end}
-.mbtn{padding:9px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:var(--font)}
-.mbtn-cancel{background:var(--bg-surface);color:var(--text-secondary)}
-.mbtn-ok{background:var(--accent);color:#0F172A}
+        .invoice-card:hover {
+            border-color: #CCC;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md)
+        }
 
-/* ── TOAST ── */
-.toast{position:fixed;bottom:calc(var(--safe-bottom)+20px);left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg-card);border:1px solid var(--border-accent);color:var(--text-primary);padding:12px 20px;border-radius:30px;font-size:13px;font-weight:500;z-index:500;box-shadow:var(--shadow);transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
-.toast.show{transform:translateX(-50%) translateY(0)}
+        .inv-avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            background: rgba(159, 234, 232, .2);
+            border: 1px solid rgba(159, 234, 232, .5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 600;
+            flex-shrink: 0;
+            color: #1A1A1A
+        }
 
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--bg-surface);border-radius:10px}
+        .inv-info {
+            flex: 1;
+            min-width: 0
+        }
 
-/* ── RESPONSIVE ── */
-@media(max-width:600px){
-  .stats-grid{grid-template-columns:repeat(3,1fr);gap:8px}
-  .stat-val{font-size:17px}
-  .editor-bar{padding:10px 14px}
-  .screen{padding:16px 14px calc(var(--safe-bottom)+16px)}
-}
-@media(max-width:420px){
-  .edbtn span{display:none}
-}
-</style>
+        .inv-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .inv-date {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px
+        }
+
+        .inv-meta {
+            text-align: right;
+            flex-shrink: 0
+        }
+
+        .inv-amount {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main)
+        }
+
+        .inv-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+            margin-left: 5px
+        }
+
+        .ic-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            background: #FAFAFA;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all .2s
+        }
+
+        .ic-btn:hover {
+            background: var(--brand-peach);
+            color: #1A1A1A;
+            border-color: var(--brand-peach)
+        }
+
+        .ic-btn.del-act:hover {
+            background: #fee2e2;
+            color: #ef4444;
+            border-color: #fca5a5
+        }
+
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 60px 20px;
+            text-align: center
+        }
+
+        .empty-icon {
+            font-size: 56px;
+            opacity: .5
+        }
+
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-main)
+        }
+
+        .empty-sub {
+            font-size: 14px;
+            color: var(--text-muted);
+            max-width: 260px
+        }
+
+        /* ── EDITOR SCREEN ── */
+        #editor-screen {
+            padding: 0;
+            max-width: 100%
+        }
+
+        .editor-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden
+        }
+
+        .editor-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 20px;
+            background: var(--bg-page);
+            border-bottom: 1px solid var(--border-light);
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        .editor-bar h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-main);
+            display: none
+        }
+
+        /* Hidden cleanly to focus on tools */
+
+        .edbtn {
+            padding: 10px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border-light);
+            font-family: inherit;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #FFF;
+            box-shadow: var(--shadow-sm);
+            color: var(--text-main)
+        }
+
+        .edbtn-calc {
+            background: var(--brand-lime);
+            border-color: var(--brand-lime)
+        }
+
+        .edbtn-save {
+            background: var(--brand-blue);
+            border-color: var(--brand-blue)
+        }
+
+        .edbtn-print {
+            background: var(--brand-peach);
+            border-color: var(--brand-peach)
+        }
+
+        .edbtn-reset {
+            background: transparent;
+            color: var(--danger);
+            border-color: var(--border-light);
+            box-shadow: none
+        }
+
+        .edbtn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md)
+        }
+
+        /* The invoice preview lives inside an iframe-like scrollable */
+        .invoice-canvas {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            background: var(--bg-page);
+            padding: 20px
+        }
+
+        /* ── INVOICE DOC (inside canvas) ── */
+        .document-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            width: 210mm;
+            margin: 0 auto
+        }
+
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            background: #FFFFFF;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, .05);
+            padding: 15mm 20mm;
+            display: flex;
+            flex-direction: column;
+            position: relative
+        }
+
+        /* Invoice typography & layout */
+        .header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--text-main);
+            padding-bottom: 15px;
+            margin-bottom: 25px
+        }
+
+        .header-left {
+            flex-basis: 30%
+        }
+
+        .header img.logo {
+            max-height: 70px;
+            object-fit: contain
+        }
+
+        .header-center {
+            text-align: center;
+            flex-basis: 55%;
+            white-space: nowrap
+        }
+
+        .company-name {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 0;
+            letter-spacing: 1.5px;
+            text-transform: uppercase
+        }
+
+        .company-address {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin: 4px 0 0;
+            font-weight: 400
+        }
+
+        .header-right {
+            flex-basis: 30%;
+            text-align: right;
+            font-size: 12px;
+            line-height: 1.4
+        }
+
+        .designer-name {
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 14px
+        }
+
+        .designer-title {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .5px
+        }
+
+        .top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 25px;
+            padding: 0 10px
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            font-size: 13px
+        }
+
+        .meta-label {
+            font-weight: 600;
+            margin-right: 8px;
+            color: var(--text-main);
+            white-space: nowrap
+        }
+
+        .meta-input {
+            border: none;
+            border-bottom: 1px dashed #CCC;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-main);
+            padding: 4px 8px;
+            background: transparent;
+            outline: none;
+            width: 350px
+        }
+
+        .meta-input:focus {
+            border-bottom: 1px solid var(--brand-blue)
+        }
+
+        .input-date {
+            width: 130px;
+            text-align: center
+        }
+
+        .title-container {
+            text-align: center;
+            margin-bottom: 30px
+        }
+
+        .doc-title {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 8px 25px;
+            background: var(--brand-peach);
+            color: var(--text-main);
+            display: inline-block;
+            border-radius: 4px;
+            box-shadow: 2px 2px 0 var(--text-main)
+        }
+
+        .section-wrapper {
+            margin-bottom: 25px;
+            position: relative
+        }
+
+        .section-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px
+        }
+
+        .section-title-wrapper {
+            border-bottom: 3px solid var(--brand-lime);
+            padding-bottom: 2px;
+            display: inline-block
+        }
+
+        .section-title-input {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            text-transform: uppercase;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            outline: none;
+            width: 15ch;
+            min-width: 60px;
+            padding: 0;
+            transition: width 0.1s ease
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            table-layout: fixed;
+            background: #FFF
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border-light);
+            padding: 6px 4px;
+            text-align: center;
+            height: 32px
+        }
+
+        th {
+            background: #FAFAFA;
+            color: var(--text-main);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 10.5px;
+            letter-spacing: .5px
+        }
+
+        td.text-left {
+            text-align: left;
+            padding-left: 10px
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 12px;
+            text-align: center;
+            color: var(--text-main);
+            outline: none;
+            padding: 4px
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            background: #FDFDFD
+        }
+
+        input.item-desc {
+            text-align: left;
+            font-weight: 400
+        }
+
+        input.item-total {
+            text-align: right;
+            font-weight: 500;
+            padding-right: 8px
+        }
+
+        input::placeholder {
+            color: #BBB;
+            font-style: italic
+        }
+
+        input[type=number]::-webkit-inner-spin-button {
+            -webkit-appearance: none
+        }
+
+        .row-hover-controls {
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            opacity: 0;
+            transition: opacity .2s;
+            gap: 4px
+        }
+
+        .calc-row {
+            position: relative
+        }
+
+        .calc-row:hover .row-hover-controls {
+            opacity: 1
+        }
+
+        .icon-btn {
+            background: #FFF;
+            border: 1px solid var(--border-light);
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1;
+            padding-bottom: 2px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .05)
+        }
+
+        .icon-btn:hover {
+            background: #F0F0F0;
+            color: #000
+        }
+
+        .del-btn:hover {
+            background: #fee2e2;
+            color: #ef4444;
+            border-color: #fca5a5
+        }
+
+        .add-row-block {
+            text-align: right;
+            margin-top: 5px
+        }
+
+        .add-row-text-btn {
+            background: transparent;
+            border: 1px dashed var(--border-light);
+            color: var(--text-muted);
+            font-size: 11px;
+            border-radius: 4px;
+            padding: 4px 12px;
+            cursor: pointer;
+            transition: all .2s;
+            display: inline-flex;
+            align-items: center;
+            font-family: inherit;
+            font-weight: 500
+        }
+
+        .add-row-text-btn:hover {
+            border-color: var(--brand-blue);
+            color: var(--text-main);
+            background: rgba(159, 234, 232, .1)
+        }
+
+        .page-total {
+            text-align: right;
+            font-weight: 600;
+            font-size: 13px;
+            padding: 10px;
+            color: var(--text-main);
+            border-top: 1px solid var(--border-light);
+            margin-top: auto
+        }
+
+        .grand-total-container {
+            margin-top: auto;
+            padding: 20px;
+            background: #FAFAFA;
+            border: 1px solid var(--border-light);
+            border-left: 4px solid var(--brand-blue);
+            text-align: right
+        }
+
+        .grand-total-container>div {
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: var(--text-muted)
+        }
+
+        .grand-total {
+            font-size: 20px !important;
+            font-weight: 600 !important;
+            color: var(--text-main) !important;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-light)
+        }
+
+        .no-print-inv {}
+
+        /* shown in editor */
+
+        @media print {
+            #app>*:not(#editor-screen) {
+                display: none !important
+            }
+
+            .editor-bar,
+            .topnav {
+                display: none !important
+            }
+
+            .invoice-canvas {
+                overflow: visible;
+                padding: 0;
+                background: white
+            }
+
+            .document-container {
+                width: 210mm;
+                gap: 0
+            }
+
+            .a4-page {
+                box-shadow: none;
+                page-break-after: always;
+                margin: 0;
+                padding: 15mm 20mm
+            }
+
+            .no-print-inv {
+                display: none !important
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important
+            }
+
+            @page {
+                size: A4;
+                margin: 0
+            }
+        }
+
+        /* ── MODAL ── */
+        .modal-bg {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .4);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(4px)
+        }
+
+        .modal-bg.open {
+            display: flex
+        }
+
+        .modal {
+            background: #FFF;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius);
+            padding: 28px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: var(--shadow-md)
+        }
+
+        .modal h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-main)
+        }
+
+        .modal p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 20px
+        }
+
+        .modal-input {
+            width: 100%;
+            background: #FAFAFA;
+            border: 1px solid var(--border-light);
+            color: var(--text-main);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            font-size: 14px;
+            outline: none;
+            font-family: inherit;
+            margin-bottom: 20px;
+            font-weight: 500
+        }
+
+        .modal-input:focus {
+            border-color: var(--brand-blue);
+            background: #FFF
+        }
+
+        .modal-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end
+        }
+
+        .mbtn {
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border-light);
+            font-family: inherit;
+            box-shadow: var(--shadow-sm);
+            transition: all .2s;
+            background: #FFF;
+            color: var(--text-main)
+        }
+
+        .mbtn:hover {
+            background: #FAFAFA;
+        }
+
+        .mbtn-ok {
+            background: var(--brand-blue);
+            border-color: var(--brand-blue);
+            color: #1A1A1A
+        }
+
+        .mbtn-ok:hover {
+            background: #8CE0DE;
+        }
+
+        /* ── TOAST ── */
+        .toast {
+            position: fixed;
+            bottom: calc(var(--safe-bottom)+20px);
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #2C2C2C;
+            color: #FFF;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 500;
+            box-shadow: var(--shadow-md);
+            transition: transform .3s cubic-bezier(.34, 1.56, .64, 1);
+            white-space: nowrap
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0)
+        }
+
+        /* ── RESPONSIVE ── */
+        @media(max-width:600px) {
+            .editor-bar {
+                padding: 10px 14px
+            }
+
+            .screen {
+                padding: 16px 14px calc(var(--safe-bottom)+16px)
+            }
+
+            .edbtn span {
+                display: none
+            }
+
+            /* Hide text labels on small screens to save space */
+            .edbtn {
+                padding: 10px;
+                border-radius: 50%
+            }
+
+            .a4-page {
+                padding: 10mm;
+            }
+
+            .meta-input {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
+
 <body>
-<div id="app">
+    <div id="app">
 
-  <!-- TOP NAV -->
-  <nav class="topnav">
-    <img class="topnav-logo" src="Invoice files/cloud9logo.JPG" alt="Cloud9" onerror="this.style.display='none'">
-    <div class="topnav-title">Cloud9 Interiors<span>Invoice Manager</span></div>
-    <button class="nav-btn" id="backBtn" style="display:none" onclick="showDashboard()">← Back</button>
-    <button class="nav-btn primary" id="newInvBtn" onclick="promptNewInvoice()">+ New Invoice</button>
-  </nav>
+        <!-- TOP NAV -->
+        <nav class="topnav">
+            <div class="topnav-title">Cloud9 Interiors<span>Invoice Manager</span></div>
+            <button class="nav-btn" id="backBtn" style="display:none" onclick="showDashboard()">← Back</button>
+            <button class="nav-btn primary" id="newInvBtn" onclick="promptNewInvoice()">+ New Quotation</button>
+        </nav>
 
-  <!-- DASHBOARD SCREEN -->
-  <div class="screen active" id="dashboard-screen">
-    <div class="stats-grid" id="statsGrid"></div>
-    <div class="section-label">Saved Invoices</div>
-    <div class="invoice-list" id="invoiceList"></div>
-  </div>
-
-  <!-- EDITOR SCREEN -->
-  <div class="screen" id="editor-screen" style="padding:0">
-    <div class="editor-wrap">
-      <div class="editor-bar">
-        <h2 id="editorTitle">New Invoice</h2>
-        <button class="edbtn edbtn-calc" onclick="calculateAll()">⟳ <span>Calc</span></button>
-        <button class="edbtn edbtn-save" onclick="saveCurrentInvoice()">💾 <span>Save</span></button>
-        <button class="edbtn edbtn-print" onclick="window.print()">🖨 <span>Print</span></button>
-        <button class="edbtn edbtn-reset" onclick="resetInvoice()">⚠ <span>Reset</span></button>
-      </div>
-      <div class="invoice-canvas">
-        <div class="document-container" id="document-container"></div>
-        <div class="no-print-inv" style="text-align:center;margin:20px 0">
-          <button class="add-row-text-btn" style="font-size:13px;padding:9px 22px" onclick="addSection()">+ Add Table Section</button>
+        <!-- DASHBOARD SCREEN -->
+        <div class="screen active" id="dashboard-screen">
+            <div class="section-label">Your Saved Quotations</div>
+            <div class="invoice-list" id="invoiceList"></div>
         </div>
-      </div>
-    </div>
-  </div>
 
-</div>
-
-<!-- Save Modal -->
-<div class="modal-bg" id="saveModal">
-  <div class="modal">
-    <h3>💾 Save Invoice</h3>
-    <p>Give this invoice a name to identify it later.</p>
-    <input class="modal-input" id="invoiceNameInput" type="text" placeholder="e.g. Priya Sharma — Living Room" maxlength="60">
-    <div class="modal-btns">
-      <button class="mbtn mbtn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="mbtn mbtn-ok" onclick="confirmSave()">Save</button>
-    </div>
-  </div>
-</div>
-
-<!-- Toast -->
-<div class="toast" id="toast"></div>
-
-<!-- Hidden templates -->
-<div id="templates" style="display:none">
-  <div id="tpl-page" class="a4-page">
-    <div class="page-content"></div>
-    <div class="page-footer"><div class="page-total">Page Total: ₹ <span class="page-sum-text">0.00</span></div></div>
-  </div>
-  <div id="tpl-header">
-    <div class="header">
-      <div class="header-left"><img src="Invoice files/cloud9logo.JPG" alt="Cloud9" class="logo" onerror="this.style.display='none'"></div>
-      <div class="header-center">
-        <h1 class="company-name">Cloud9 Interiors</h1>
-        <p class="company-address">ASR complex, 3rd floor, Shastrinagar, Nirmal</p>
-      </div>
-      <div class="header-right">
-        <div class="designer-name">Rahul Balashanker</div>
-        <div class="designer-title">Interior Designer</div>
-      </div>
-    </div>
-    <div class="top-row">
-      <div class="meta-item"><span class="meta-label">Customer Name:</span><input type="text" class="meta-input" placeholder="Enter Client Name"></div>
-      <div class="meta-item"><span class="meta-label">Date:</span><input type="text" class="meta-input input-date" placeholder="DD / MM / YYYY"></div>
-    </div>
-    <div class="title-container"><div class="doc-title">Interior Quotation</div></div>
-  </div>
-  <div id="tpl-minimal-header">
-    <div class="header" style="margin-bottom:16px;padding-bottom:8px">
-      <div class="header-left" style="flex-basis:15%"><img src="Invoice files/cloud9logo.JPG" alt="" class="logo" style="max-height:38px" onerror="this.style.display='none'"></div>
-      <div class="header-center" style="flex-basis:70%"><h1 class="company-name" style="font-size:20px">Cloud9 Interiors</h1></div>
-      <div class="header-right" style="flex-basis:15%"></div>
-    </div>
-  </div>
-  <div id="tpl-section">
-    <div class="section-wrapper" data-section-name="">
-      <div class="section-header-row">
-        <div class="section-title-wrapper">
-          <input type="text" class="section-title-input calc-input" placeholder="Table Name..." oninput="this.style.width=Math.max(7,this.value.length+1)+'ch'">
+        <!-- EDITOR SCREEN -->
+        <div class="screen" id="editor-screen" style="padding:0">
+            <div class="editor-wrap">
+                <div class="editor-bar">
+                    <button class="edbtn edbtn-calc" onclick="calculateAll()" title="Calculate">⟳
+                        <span>Calculate</span></button>
+                    <button class="edbtn edbtn-save" onclick="saveCurrentInvoice()" title="Save">💾 <span>Save
+                            Data</span></button>
+                    <button class="edbtn edbtn-print" onclick="window.print()" title="Print">🖨 <span>Print /
+                            PDF</span></button>
+                    <button class="edbtn edbtn-reset" onclick="resetInvoice()" title="Reset">⚠ <span>Clear
+                            All</span></button>
+                </div>
+                <div class="invoice-canvas">
+                    <div class="document-container" id="document-container"></div>
+                    <div class="no-print-inv" style="text-align:center;margin:30px 0 10px">
+                        <button class="add-row-text-btn" style="font-size:14px;padding:10px 24px"
+                            onclick="addSection()">+ Add New Table Block</button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="icon-btn del-btn no-print-inv" title="Delete Table" onclick="deleteSection(this)">×</div>
-      </div>
-      <table>
-        <thead><tr>
-          <th style="width:33%">Description</th>
-          <th style="width:10%">Length</th>
-          <th style="width:10%">Height</th>
-          <th style="width:10%">Width</th>
-          <th style="width:17%">Sft/Cft</th>
-          <th style="width:20%">Total (₹)</th>
-        </tr></thead>
-        <tbody class="calc-table"></tbody>
-      </table>
-      <div class="add-row-block no-print-inv"><button class="add-row-text-btn" onclick="addNewRow(this)">+ Add Row</button></div>
+
     </div>
-  </div>
-  <table><tbody id="tpl-row">
-    <tr class="calc-row">
-      <td class="text-left"><input type="text" class="item-desc" placeholder="Item description..."></td>
-      <td><input type="number" step="any" class="calc-input l"></td>
-      <td><input type="number" step="any" class="calc-input h"></td>
-      <td><input type="number" step="any" class="calc-input w"></td>
-      <td><input type="text" class="readonly sqft" readonly></td>
-      <td><input type="number" step="any" class="calc-input item-total"></td>
-      <td class="row-hover-controls no-print-inv" style="position:absolute;border:none;width:auto;padding:0">
-        <div class="icon-btn del-btn" title="Delete Row" onclick="deleteRow(this)">×</div>
-      </td>
-    </tr>
-  </tbody></table>
-  <div id="tpl-grand-total">
-    <div class="grand-total-container">
-      <div class="summary-lines"></div>
-      <div class="grand-total">GRAND TOTAL: ₹ <span id="masterTotal">0.00</span></div>
+
+    <!-- Save Modal -->
+    <div class="modal-bg" id="saveModal">
+        <div class="modal">
+            <h3>💾 Save Quotation</h3>
+            <p>Give this document a simple name so you can find it later.</p>
+            <input class="modal-input" id="invoiceNameInput" type="text" placeholder="e.g. Priya Sharma — Living Room"
+                maxlength="60">
+            <div class="modal-btns">
+                <button class="mbtn mbtn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="mbtn mbtn-ok" onclick="confirmSave()">Save Document</button>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 
-<script>
-// ── STATE ──
-const DB_KEY = 'cloud9_invoices_v1';
-let invoices = [];       // array of {id, name, date, amount, data}
-let currentId = null;    // editing invoice id (null = new)
-let quotationData = [];
-let customerNameVal = '';
-let dateVal = '';
-const PAGE_SAFE_HEIGHT = 870;
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
 
-// ── STORAGE ──
-function loadFromStorage(){
-  try{ invoices = JSON.parse(localStorage.getItem(DB_KEY)) || []; } catch(e){ invoices=[]; }
-}
-function saveToStorage(){
-  localStorage.setItem(DB_KEY, JSON.stringify(invoices));
-}
+    <!-- Hidden templates -->
+    <div id="templates" style="display:none">
+        <div id="tpl-page" class="a4-page">
+            <div class="page-content"></div>
+            <div class="page-footer">
+                <div class="page-total">Current Page Total: ₹ <span class="page-sum-text">0.00</span></div>
+            </div>
+        </div>
 
-// ── DASHBOARD ──
-function showDashboard(){
-  document.getElementById('dashboard-screen').classList.add('active');
-  document.getElementById('editor-screen').classList.remove('active');
-  document.getElementById('backBtn').style.display='none';
-  document.getElementById('newInvBtn').style.display='';
-  loadFromStorage();
-  renderDashboard();
-}
-function renderDashboard(){
-  const list = document.getElementById('invoiceList');
-  const statsGrid = document.getElementById('statsGrid');
-  const now = new Date();
-  const thisMonth = invoices.filter(i=>{
-    const d=new Date(i.savedAt||0); return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
-  });
-  const totalAmount = invoices.reduce((s,i)=>s+(i.amount||0),0);
-  statsGrid.innerHTML=`
-    <div class="stat-card s1"><div class="stat-val">${invoices.length}</div><div class="stat-lbl">Total</div></div>
-    <div class="stat-card s2"><div class="stat-val">${thisMonth.length}</div><div class="stat-lbl">This Month</div></div>
-    <div class="stat-card s3"><div class="stat-val">₹${totalAmount>=1000?(totalAmount/1000).toFixed(1)+'k':totalAmount.toFixed(0)}</div><div class="stat-lbl">Revenue</div></div>`;
-  if(!invoices.length){
-    list.innerHTML=`<div class="empty-state"><div class="empty-icon">📄</div><div class="empty-title">No invoices yet</div><div class="empty-sub">Tap "+ New Invoice" to create your first quotation</div></div>`;
-    return;
-  }
-  list.innerHTML = invoices.slice().reverse().map(inv=>{
-    const initials = (inv.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const saved = new Date(inv.savedAt||0).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
-    return `<div class="invoice-card" onclick="editInvoice('${inv.id}')">
+        <div id="tpl-header">
+            <div class="header">
+                <div class="header-left"><img src="Invoice files/cloud9logo.JPG" alt="Cloud9 Logo" class="logo"
+                        onerror="this.style.display='none'"></div>
+                <div class="header-center">
+                    <h1 class="company-name">Cloud9 Interiors</h1>
+                    <p class="company-address">ASR complex, 3rd floor, Shastrinagar, Nirmal</p>
+                </div>
+                <div class="header-right">
+                    <div class="designer-name">Rahul Balashanker</div>
+                    <div class="designer-title">Interior Designer</div>
+                </div>
+            </div>
+            <div class="top-row">
+                <div class="meta-item"><span class="meta-label">Customer Name:</span><input type="text"
+                        class="meta-input input-name" placeholder="Enter Full Client Name"></div>
+                <div class="meta-item"><span class="meta-label">Date:</span><input type="text"
+                        class="meta-input input-date" placeholder="DD / MM / YYYY"></div>
+            </div>
+            <div class="title-container">
+                <div class="doc-title">Interior Quotation</div>
+            </div>
+        </div>
+
+        <div id="tpl-minimal-header">
+            <div class="header" style="margin-bottom:20px;padding-bottom:10px">
+                <div class="header-left" style="flex-basis:15%"><img src="Invoice files/cloud9logo.JPG"
+                        alt="Cloud9 Logo" class="logo" style="max-height:40px" onerror="this.style.display='none'">
+                </div>
+                <div class="header-center" style="flex-basis:70%">
+                    <h1 class="company-name" style="font-size:20px">Cloud9 Interiors</h1>
+                </div>
+                <div class="header-right" style="flex-basis:15%"></div>
+            </div>
+        </div>
+
+        <div id="tpl-section">
+            <div class="section-wrapper" data-section-name="">
+                <div class="section-header-row">
+                    <div class="section-title-wrapper">
+                        <input type="text" class="section-title-input calc-input" placeholder="Table Name..."
+                            oninput="this.style.width=Math.max(7,this.value.length+1)+'ch'">
+                    </div>
+                    <div class="icon-btn del-btn no-print-inv" title="Delete Table" onclick="deleteSection(this)">×
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:32%">Description</th>
+                            <th style="width:10%">Length</th>
+                            <th style="width:10%">Height</th>
+                            <th style="width:10%">Width</th>
+                            <th style="width:18%">Total Sft/Cft</th>
+                            <th style="width:20%">Total Price (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="calc-table"></tbody>
+                </table>
+                <div class="add-row-block no-print-inv"><button class="add-row-text-btn" onclick="addNewRow(this)">+ Add
+                        Row</button></div>
+            </div>
+        </div>
+
+        <table>
+            <tbody id="tpl-row">
+                <tr class="calc-row">
+                    <td class="text-left"><input type="text" class="item-desc" placeholder="Item description..."></td>
+                    <td><input type="number" step="any" class="calc-input l"></td>
+                    <td><input type="number" step="any" class="calc-input h"></td>
+                    <td><input type="number" step="any" class="calc-input w"></td>
+                    <td><input type="text" class="readonly sqft" readonly></td>
+                    <td><input type="number" step="any" class="calc-input item-total"></td>
+                    <td class="row-hover-controls no-print-inv"
+                        style="position:absolute;border:none;width:auto;padding:0">
+                        <div class="icon-btn del-btn" title="Delete Row" onclick="deleteRow(this)">×</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div id="tpl-grand-total">
+            <div class="grand-total-container">
+                <div class="summary-lines"></div>
+                <div class="grand-total">GRAND TOTAL: ₹ <span id="masterTotal">0.00</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── STATE ──
+        const DB_KEY = 'cloud9_invoices_v1';
+        let invoices = [];       // array of {id, name, date, amount, data}
+        let currentId = null;    // editing invoice id (null = new)
+        let quotationData = [];
+        let customerNameVal = '';
+        let dateVal = '';
+        const PAGE_SAFE_HEIGHT = 880;
+
+        // ── STORAGE ──
+        function loadFromStorage() {
+            try { invoices = JSON.parse(localStorage.getItem(DB_KEY)) || []; } catch (e) { invoices = []; }
+        }
+        function saveToStorage() {
+            localStorage.setItem(DB_KEY, JSON.stringify(invoices));
+        }
+
+        // ── DASHBOARD ──
+        function showDashboard() {
+            document.getElementById('dashboard-screen').classList.add('active');
+            document.getElementById('editor-screen').classList.remove('active');
+            document.getElementById('backBtn').style.display = 'none';
+            document.getElementById('newInvBtn').style.display = '';
+            loadFromStorage();
+            renderDashboard();
+        }
+        function renderDashboard() {
+            const list = document.getElementById('invoiceList');
+            if (!invoices.length) {
+                list.innerHTML = `<div class="empty-state"><div class="empty-icon">📁</div><div class="empty-title">No Quotations Yet</div><div class="empty-sub">Tap on "+ New Quotation" to start creating your first document and your saved files will appear here.</div></div>`;
+                return;
+            }
+            list.innerHTML = invoices.slice().reverse().map(inv => {
+                const initials = (inv.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'C9';
+                const saved = new Date(inv.savedAt || 0).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                return `<div class="invoice-card" onclick="editInvoice('${inv.id}')">
       <div class="inv-avatar">${initials}</div>
       <div class="inv-info">
-        <div class="inv-name">${inv.name||'Untitled'}</div>
+        <div class="inv-name">${inv.name || 'Untitled Quotation'}</div>
         <div class="inv-date">${saved}</div>
       </div>
-      <div class="inv-meta">
-        <div class="inv-amount">₹${(inv.amount||0).toLocaleString('en-IN')}</div>
-        <span class="inv-badge badge-saved">Saved</span>
-      </div>
       <div class="inv-actions" onclick="event.stopPropagation()">
-        <div class="ic-btn edit" title="Edit" onclick="editInvoice('${inv.id}')">✏</div>
-        <div class="ic-btn" title="Delete" onclick="deleteInvoice('${inv.id}')">🗑</div>
+        <div class="ic-btn" title="Edit" onclick="editInvoice('${inv.id}')">✏️</div>
+        <div class="ic-btn del-act" title="Delete" onclick="deleteInvoice('${inv.id}')">🗑</div>
       </div>
     </div>`;
-  }).join('');
-}
-function deleteInvoice(id){
-  if(!confirm('Delete this invoice?')) return;
-  invoices = invoices.filter(i=>i.id!==id);
-  saveToStorage();
-  renderDashboard();
-  showToast('Invoice deleted');
-}
+            }).join('');
+        }
+        function deleteInvoice(id) {
+            if (!confirm('Are you certain you want to delete this invoice?')) return;
+            invoices = invoices.filter(i => i.id !== id);
+            saveToStorage();
+            renderDashboard();
+            showToast('Quotation Deleted');
+        }
 
-// ── EDITOR ──
-function showEditor(title){
-  document.getElementById('dashboard-screen').classList.remove('active');
-  document.getElementById('editor-screen').classList.add('active');
-  document.getElementById('backBtn').style.display='';
-  document.getElementById('newInvBtn').style.display='none';
-  document.getElementById('editorTitle').textContent = title||'New Invoice';
-}
-function promptNewInvoice(){
-  currentId = null;
-  customerNameVal=''; dateVal='';
-  quotationData = JSON.parse(JSON.stringify(DEFAULT_DATA));
-  showEditor('New Invoice');
-  buildDOM();
-}
-function editInvoice(id){
-  const inv = invoices.find(i=>i.id===id);
-  if(!inv) return;
-  currentId = id;
-  customerNameVal = inv.customerName||'';
-  dateVal = inv.date||'';
-  quotationData = JSON.parse(JSON.stringify(inv.data||DEFAULT_DATA));
-  showEditor(inv.name);
-  buildDOM();
-}
+        // ── EDITOR ──
+        function showEditor() {
+            document.getElementById('dashboard-screen').classList.remove('active');
+            document.getElementById('editor-screen').classList.add('active');
+            document.getElementById('backBtn').style.display = '';
+            document.getElementById('newInvBtn').style.display = 'none';
+            window.scrollTo(0, 0);
+        }
+        function promptNewInvoice() {
+            currentId = null;
+            customerNameVal = ''; dateVal = '';
+            quotationData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+            showEditor();
+            buildDOM();
+        }
+        function editInvoice(id) {
+            const inv = invoices.find(i => i.id === id);
+            if (!inv) return;
+            currentId = id;
+            customerNameVal = inv.customerName || '';
+            dateVal = inv.date || '';
+            quotationData = JSON.parse(JSON.stringify(inv.data || DEFAULT_DATA));
+            showEditor();
+            buildDOM();
+        }
 
-// ── SAVE FLOW ──
-let pendingSaveName='';
-function saveCurrentInvoice(){
-  syncStateFromDOM();
-  calculateAll();
-  const existing = currentId ? invoices.find(i=>i.id===currentId) : null;
-  if(existing){
-    document.getElementById('invoiceNameInput').value = existing.name;
-  } else {
-    document.getElementById('invoiceNameInput').value = customerNameVal ? customerNameVal+' — Quotation' : '';
-  }
-  document.getElementById('saveModal').classList.add('open');
-  document.getElementById('invoiceNameInput').focus();
-}
-function closeModal(){ document.getElementById('saveModal').classList.remove('open'); }
-function confirmSave(){
-  const name = document.getElementById('invoiceNameInput').value.trim();
-  if(!name){ document.getElementById('invoiceNameInput').style.borderColor='red'; return; }
-  closeModal();
-  syncStateFromDOM();
-  calculateAll();
-  const grandEl = document.getElementById('masterTotal');
-  const amount = parseFloat((grandEl?.textContent||'0').replace(/,/g,''))||0;
-  if(currentId){
-    const idx = invoices.findIndex(i=>i.id===currentId);
-    if(idx>-1){
-      invoices[idx]={...invoices[idx],name,customerName:customerNameVal,date:dateVal,amount,data:quotationData,savedAt:Date.now()};
-    }
-  } else {
-    const id='inv_'+Date.now();
-    currentId=id;
-    invoices.push({id,name,customerName:customerNameVal,date:dateVal,amount,data:quotationData,savedAt:Date.now()});
-  }
-  saveToStorage();
-  document.getElementById('editorTitle').textContent=name;
-  showToast('✅ Invoice saved!');
-}
+        // ── SAVE FLOW ──
+        let pendingSaveName = '';
+        function saveCurrentInvoice() {
+            syncStateFromDOM();
+            calculateAll();
+            const existing = currentId ? invoices.find(i => i.id === currentId) : null;
+            if (existing) {
+                document.getElementById('invoiceNameInput').value = existing.name;
+            } else {
+                document.getElementById('invoiceNameInput').value = customerNameVal ? customerNameVal + ' — Quotation' : '';
+            }
+            document.getElementById('saveModal').classList.add('open');
+            document.getElementById('invoiceNameInput').focus();
+        }
+        function closeModal() { document.getElementById('saveModal').classList.remove('open'); }
+        function confirmSave() {
+            const name = document.getElementById('invoiceNameInput').value.trim();
+            if (!name) { document.getElementById('invoiceNameInput').style.borderColor = 'red'; return; }
+            closeModal();
+            syncStateFromDOM();
+            calculateAll();
 
-// ── BUILD DOM ──
-const DEFAULT_DATA=[
-  {title:'TV Unit',rows:[{desc:'Main TV Console',l:'',h:'',w:'',price:''},{desc:'Back Paneling',l:'',h:'',w:'',price:''}]},
-  {title:'Kitchen',rows:[{desc:'Base unit',l:'',h:'',w:'',price:''},{desc:'Loft',l:'',h:'',w:'',price:''},{desc:'Backsplash',l:'',h:'',w:'',price:''}]},
-  {title:'Bedroom 1',rows:[{desc:'Wardrobe',l:'',h:'',w:'',price:''},{desc:'Bed',l:'',h:'',w:'',price:''}]},
-];
+            if (currentId) {
+                const idx = invoices.findIndex(i => i.id === currentId);
+                if (idx > -1) {
+                    invoices[idx] = { ...invoices[idx], name, customerName: customerNameVal, date: dateVal, amount: 0, data: quotationData, savedAt: Date.now() };
+                }
+            } else {
+                const id = 'inv_' + Date.now();
+                currentId = id;
+                invoices.push({ id, name, customerName: customerNameVal, date: dateVal, amount: 0, data: quotationData, savedAt: Date.now() });
+            }
+            saveToStorage();
+            showToast('✅ Saved Successfully!');
+        }
 
-function buildDOM(){
-  const nameEl=document.querySelector('.input-name');
-  const dateEl=document.querySelector('.input-date');
-  if(nameEl) customerNameVal=nameEl.value;
-  if(dateEl) dateVal=dateEl.value;
-  const container=document.getElementById('document-container');
-  container.innerHTML='';
-  let page=createEmptyPage(1);
-  let content=page.querySelector('.page-content');
-  container.appendChild(page);
-  let pageNum=1;
-  quotationData.forEach((sec,si)=>{
-    const secUI=createSectionDOM(sec.title,si);
-    sec.rows.forEach((r,ri)=>secUI.querySelector('tbody').appendChild(createRowDOM(r,si,ri)));
-    content.appendChild(secUI);
-    if(content.getBoundingClientRect().height>PAGE_SAFE_HEIGHT && content.children.length>1){
-      content.removeChild(secUI);
-      pageNum++;
-      page=createEmptyPage(pageNum);
-      content=page.querySelector('.page-content');
-      container.appendChild(page);
-      content.appendChild(secUI);
-    }
-  });
-  const gt=document.getElementById('tpl-grand-total').cloneNode(true);
-  content.appendChild(gt.firstElementChild);
-  document.querySelectorAll('.calc-input,.item-desc').forEach(el=>el.addEventListener('input',debounce(syncAndCalc,400)));
-  const nn=document.querySelector('.input-name');
-  const nd=document.querySelector('.input-date');
-  if(nn){nn.value=customerNameVal;nn.addEventListener('input',e=>customerNameVal=e.target.value);}
-  if(nd){nd.value=dateVal;nd.addEventListener('input',e=>dateVal=e.target.value);}
-  calculateAll();
-}
-function createEmptyPage(n){
-  const p=document.getElementById('tpl-page').cloneNode(true);
-  p.removeAttribute('id');
-  const c=p.querySelector('.page-content');
-  c.appendChild(document.getElementById(n===1?'tpl-header':'tpl-minimal-header').cloneNode(true));
-  return p;
-}
-function createSectionDOM(title,si){
-  const s=document.getElementById('tpl-section').firstElementChild.cloneNode(true);
-  s.dataset.secIdx=si;
-  const inp=s.querySelector('.section-title-input');
-  inp.value=title; inp.style.width=Math.max(7,title.length+1)+'ch';
-  return s;
-}
-function createRowDOM(row,si,ri){
-  const tr=document.getElementById('tpl-row').cloneNode(true).querySelector('tr').cloneNode(true);
-  tr.dataset.secIdx=si; tr.dataset.rowIdx=ri;
-  tr.querySelector('.item-desc').value=row.desc||'';
-  tr.querySelector('.l').value=row.l||'';
-  tr.querySelector('.h').value=row.h||'';
-  tr.querySelector('.w').value=row.w||'';
-  tr.querySelector('.item-total').value=row.price||'';
-  return tr;
-}
+        // ── BUILD DOM ──
+        const DEFAULT_DATA = [
+            { title: 'TV Unit', rows: [{ desc: 'Main TV Console', l: '', h: '', w: '', price: '' }, { desc: 'Back Paneling', l: '', h: '', w: '', price: '' }] },
+            { title: 'Kitchen', rows: [{ desc: 'Base unit', l: '', h: '', w: '', price: '' }, { desc: 'Backsplash', l: '', h: '', w: '', price: '' }, { desc: 'Loft', l: '', h: '', w: '', price: '' }, { desc: 'Dining storage', l: '', h: '', w: '', price: '' }, { desc: 'Crockery unit', l: '', h: '', w: '', price: '' }] },
+            { title: 'Bedroom 1', rows: [{ desc: 'Wardrobe', l: '', h: '', w: '', price: '' }, { desc: 'Study unit', l: '', h: '', w: '', price: '' }, { desc: 'Dressing table', l: '', h: '', w: '', price: '' }, { desc: 'Bed', l: '', h: '', w: '', price: '' }] },
+        ];
 
-// ── ROW / SECTION ACTIONS ──
-window.addSection=function(){
-  quotationData.push({title:'New Section',rows:[{desc:'',l:'',h:'',w:'',price:''}]});
-  syncStateFromDOM(); buildDOM();
-};
-window.deleteSection=function(el){
-  const sw=el.closest('.section-wrapper');
-  const si=parseInt(sw.dataset.secIdx);
-  if(!isNaN(si)) quotationData.splice(si,1);
-  syncStateFromDOM(); buildDOM();
-};
-window.addNewRow=function(btn){
-  const sw=btn.closest('.section-wrapper');
-  const si=parseInt(sw.dataset.secIdx);
-  if(!isNaN(si)){syncStateFromDOM();quotationData[si].rows.push({desc:'',l:'',h:'',w:'',price:''});buildDOM();}
-};
-window.deleteRow=function(el){
-  const tr=el.closest('tr');
-  const si=parseInt(tr.dataset.secIdx),ri=parseInt(tr.dataset.rowIdx);
-  if(!isNaN(si)&&!isNaN(ri)){syncStateFromDOM();quotationData[si].rows.splice(ri,1);buildDOM();}
-};
+        function buildDOM() {
+            const nameEl = document.querySelector('.input-name');
+            const dateEl = document.querySelector('.input-date');
+            if (nameEl) customerNameVal = nameEl.value;
+            if (dateEl) dateVal = dateEl.value;
 
-// ── SYNC STATE FROM DOM ──
-function syncStateFromDOM(){
-  document.querySelectorAll('.section-wrapper').forEach(sw=>{
-    const si=parseInt(sw.dataset.secIdx);
-    if(isNaN(si)||!quotationData[si]) return;
-    const titleEl=sw.querySelector('.section-title-input');
-    if(titleEl) quotationData[si].title=titleEl.value;
-    sw.querySelectorAll('.calc-row').forEach(tr=>{
-      const ri=parseInt(tr.dataset.rowIdx);
-      if(isNaN(ri)||!quotationData[si].rows[ri]) return;
-      quotationData[si].rows[ri].desc=tr.querySelector('.item-desc')?.value||'';
-      quotationData[si].rows[ri].l=tr.querySelector('.l')?.value||'';
-      quotationData[si].rows[ri].h=tr.querySelector('.h')?.value||'';
-      quotationData[si].rows[ri].w=tr.querySelector('.w')?.value||'';
-      quotationData[si].rows[ri].price=tr.querySelector('.item-total')?.value||'';
-    });
-  });
-}
+            const container = document.getElementById('document-container');
+            container.innerHTML = '';
 
-// ── CALCULATE ──
-function calculateAll(){
-  let grandTotal=0;
-  const summaryLines=[];
-  document.querySelectorAll('.section-wrapper').forEach(sw=>{
-    let secTotal=0;
-    sw.querySelectorAll('.calc-row').forEach(tr=>{
-      const l=parseFloat(tr.querySelector('.l')?.value)||0;
-      const h=parseFloat(tr.querySelector('.h')?.value)||0;
-      const w=parseFloat(tr.querySelector('.w')?.value)||0;
-      const sqftEl=tr.querySelector('.sqft');
-      let sqft=0;
-      if(w>0) sqft=l*h*w; else if(h>0) sqft=l*h; else sqft=l;
-      if(sqftEl) sqftEl.value=sqft>0?sqft.toFixed(2):'';
-      const price=parseFloat(tr.querySelector('.item-total')?.value)||0;
-      secTotal+=price;
-    });
-    grandTotal+=secTotal;
-    const title=sw.querySelector('.section-title-input')?.value||'Section';
-    summaryLines.push({title,total:secTotal});
-    const pg=sw.closest('.a4-page');
-    if(pg){
-      let pgTotal=0;
-      pg.querySelectorAll('.item-total').forEach(el=>pgTotal+=parseFloat(el.value)||0);
-      const ps=pg.querySelector('.page-sum-text');
-      if(ps) ps.textContent=pgTotal.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
-    }
-  });
-  const masterEl=document.getElementById('masterTotal');
-  if(masterEl) masterEl.textContent=grandTotal.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
-  const sumLines=document.querySelector('.summary-lines');
-  if(sumLines) sumLines.innerHTML=summaryLines.map(s=>`<div>${s.title}: ₹${s.total.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>`).join('');
-}
+            let page = createEmptyPage(1);
+            let content = page.querySelector('.page-content');
+            container.appendChild(page);
 
-function syncAndCalc(){ syncStateFromDOM(); buildDOM(); }
-function debounce(fn,d){let t;return function(){clearTimeout(t);t=setTimeout(()=>fn.apply(this,arguments),d);};}
+            let pageNum = 1;
+            quotationData.forEach((sec, si) => {
+                const secUI = createSectionDOM(sec.title, si);
+                sec.rows.forEach((r, ri) => secUI.querySelector('tbody').appendChild(createRowDOM(r, si, ri)));
+                content.appendChild(secUI);
 
-function resetInvoice(){
-  if(!confirm('Reset all data? This cannot be undone.')) return;
-  customerNameVal=''; dateVal='';
-  quotationData=JSON.parse(JSON.stringify(DEFAULT_DATA));
-  buildDOM();
-  showToast('Invoice reset');
-}
+                // Overflow handling roughly mapped to screen calculation
+                if (content.getBoundingClientRect().height > PAGE_SAFE_HEIGHT && content.children.length > 1) {
+                    content.removeChild(secUI);
+                    pageNum++;
+                    page = createEmptyPage(pageNum);
+                    content = page.querySelector('.page-content');
+                    container.appendChild(page);
+                    content.appendChild(secUI);
+                }
+            });
 
-// ── TOAST ──
-function showToast(msg,dur=2500){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),dur);
-}
+            const gt = document.getElementById('tpl-grand-total').cloneNode(true);
+            content.appendChild(gt.firstElementChild);
 
-// ── MODAL KEYBOARD ──
-document.getElementById('invoiceNameInput').addEventListener('keydown',e=>{if(e.key==='Enter')confirmSave();if(e.key==='Escape')closeModal();});
+            document.querySelectorAll('.calc-input,.item-desc').forEach(el => el.addEventListener('input', debounce(syncAndCalc, 400)));
+            const nn = document.querySelector('.input-name');
+            const nd = document.querySelector('.input-date');
+            if (nn) { nn.value = customerNameVal; nn.addEventListener('input', e => customerNameVal = e.target.value); }
+            if (nd) { nd.value = dateVal; nd.addEventListener('input', e => dateVal = e.target.value); }
 
-// ── PWA ──
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('sw.js').then(r=>console.log('SW ready',r.scope)).catch(console.error);
-  });
-}
+            calculateAll();
+        }
 
-// Handle ?new=1 shortcut
-if(new URLSearchParams(location.search).get('new')==='1') setTimeout(promptNewInvoice,300);
+        function createEmptyPage(n) {
+            const p = document.getElementById('tpl-page').cloneNode(true);
+            p.removeAttribute('id');
+            const c = p.querySelector('.page-content');
+            c.appendChild(document.getElementById(n === 1 ? 'tpl-header' : 'tpl-minimal-header').cloneNode(true));
+            return p;
+        }
+        function createSectionDOM(title, si) {
+            const s = document.getElementById('tpl-section').firstElementChild.cloneNode(true);
+            s.dataset.secIdx = si;
+            const inp = s.querySelector('.section-title-input');
+            inp.value = title; inp.style.width = Math.max(7, title.length + 1) + 'ch';
+            return s;
+        }
+        function createRowDOM(row, si, ri) {
+            const tr = document.getElementById('tpl-row').cloneNode(true).querySelector('tr').cloneNode(true);
+            tr.dataset.secIdx = si; tr.dataset.rowIdx = ri;
+            tr.querySelector('.item-desc').value = row.desc || '';
+            tr.querySelector('.l').value = row.l || '';
+            tr.querySelector('.h').value = row.h || '';
+            tr.querySelector('.w').value = row.w || '';
+            tr.querySelector('.item-total').value = row.price || '';
+            return tr;
+        }
 
-// ── INIT ──
-loadFromStorage();
-renderDashboard();
-</script>
+        // ── ROW / SECTION ACTIONS ──
+        window.addSection = function () {
+            quotationData.push({ title: 'New Section', rows: [{ desc: '', l: '', h: '', w: '', price: '' }] });
+            syncStateFromDOM(); buildDOM();
+        };
+        window.deleteSection = function (el) {
+            const sw = el.closest('.section-wrapper');
+            const si = parseInt(sw.dataset.secIdx);
+            if (!isNaN(si)) quotationData.splice(si, 1);
+            syncStateFromDOM(); buildDOM();
+        };
+        window.addNewRow = function (btn) {
+            const sw = btn.closest('.section-wrapper');
+            const si = parseInt(sw.dataset.secIdx);
+            if (!isNaN(si)) { syncStateFromDOM(); quotationData[si].rows.push({ desc: '', l: '', h: '', w: '', price: '' }); buildDOM(); }
+        };
+        window.deleteRow = function (el) {
+            const tr = el.closest('tr');
+            const si = parseInt(tr.dataset.secIdx), ri = parseInt(tr.dataset.rowIdx);
+            if (!isNaN(si) && !isNaN(ri)) { syncStateFromDOM(); quotationData[si].rows.splice(ri, 1); buildDOM(); }
+        };
+
+        // ── SYNC STATE FROM DOM ──
+        function syncStateFromDOM() {
+            document.querySelectorAll('.section-wrapper').forEach(sw => {
+                const si = parseInt(sw.dataset.secIdx);
+                if (isNaN(si) || !quotationData[si]) return;
+                const titleEl = sw.querySelector('.section-title-input');
+                if (titleEl) quotationData[si].title = titleEl.value;
+                sw.querySelectorAll('.calc-row').forEach(tr => {
+                    const ri = parseInt(tr.dataset.rowIdx);
+                    if (isNaN(ri) || !quotationData[si].rows[ri]) return;
+                    quotationData[si].rows[ri].desc = tr.querySelector('.item-desc')?.value || '';
+                    quotationData[si].rows[ri].l = tr.querySelector('.l')?.value || '';
+                    quotationData[si].rows[ri].h = tr.querySelector('.h')?.value || '';
+                    quotationData[si].rows[ri].w = tr.querySelector('.w')?.value || '';
+                    quotationData[si].rows[ri].price = tr.querySelector('.item-total')?.value || '';
+                });
+            });
+        }
+
+        // ── CALCULATE ──
+        function calculateAll() {
+            let grandTotal = 0;
+            const summaryLines = [];
+            document.querySelectorAll('.section-wrapper').forEach(sw => {
+                let secTotal = 0;
+                sw.querySelectorAll('.calc-row').forEach(tr => {
+                    const l = parseFloat(tr.querySelector('.l')?.value) || 0;
+                    const h = parseFloat(tr.querySelector('.h')?.value) || 0;
+                    const w = parseFloat(tr.querySelector('.w')?.value) || 0;
+                    const sqftEl = tr.querySelector('.sqft');
+                    let sqft = 0;
+                    if (w > 0) sqft = l * h * w; else if (h > 0) sqft = l * h; else sqft = l;
+                    if (sqftEl) sqftEl.value = sqft > 0 ? sqft.toFixed(2) : '';
+                    const price = parseFloat(tr.querySelector('.item-total')?.value) || 0;
+                    secTotal += price;
+                });
+                grandTotal += secTotal;
+                const title = sw.querySelector('.section-title-input')?.value || 'Section';
+                summaryLines.push({ title, total: secTotal });
+                const pg = sw.closest('.a4-page');
+                if (pg) {
+                    let pgTotal = 0;
+                    pg.querySelectorAll('.item-total').forEach(el => pgTotal += parseFloat(el.value) || 0);
+                    const ps = pg.querySelector('.page-sum-text');
+                    if (ps) ps.textContent = pgTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                }
+            });
+            const masterEl = document.getElementById('masterTotal');
+            if (masterEl) masterEl.textContent = grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const sumLines = document.querySelector('.summary-lines');
+            if (sumLines) sumLines.innerHTML = summaryLines.map(s => `<div>${s.title}: ₹${s.total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>`).join('');
+        }
+
+        function syncAndCalc() { syncStateFromDOM(); buildDOM(); }
+        function debounce(fn, d) { let t; return function () { clearTimeout(t); t = setTimeout(() => fn.apply(this, arguments), d); }; }
+
+        function resetInvoice() {
+            if (!confirm('Clear all data on this document? This cannot be undone.')) return;
+            customerNameVal = ''; dateVal = '';
+            quotationData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+            buildDOM();
+            showToast('Document Cleared');
+        }
+
+        // ── TOAST ──
+        function showToast(msg, dur = 2500) {
+            const t = document.getElementById('toast');
+            t.textContent = msg; t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), dur);
+        }
+
+        // ── MODAL KEYBOARD ──
+        document.getElementById('invoiceNameInput').addEventListener('keydown', e => { if (e.key === 'Enter') confirmSave(); if (e.key === 'Escape') closeModal(); });
+
+        // ── PWA ──
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(() => { }); // silent catch
+            });
+        }
+
+        // Handle ?new=1 shortcut
+        if (new URLSearchParams(location.search).get('new') === '1') setTimeout(promptNewInvoice, 300);
+
+        // ── INIT ──
+        loadFromStorage();
+        renderDashboard();
+    </script>
 </body>
+
 </html>
