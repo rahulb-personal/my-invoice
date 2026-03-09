@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cloud9-invoices-v1';
+const CACHE_NAME = 'cloud9-invoices-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -13,7 +13,7 @@ const ASSETS = [
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS).catch(() => {});
+      return cache.addAll(ASSETS).catch(() => { });
     })
   );
   self.skipWaiting();

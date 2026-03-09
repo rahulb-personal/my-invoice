@@ -900,18 +900,69 @@
         @media(max-width:850px) {
             .invoice-canvas {
                 padding: 10px;
-                overflow-x: hidden;
+                overflow-x: auto;
+                /* allow tiny bit of scrolling if table is too dense instead of cutting */
             }
 
-            .document-container {
-                /* On narrow screens, calculate the scale factor needed to fit 210mm (approx 794px) into the viewport */
-                -webkit-transform: scale(calc((100vw - 20px) / 794));
-                transform: scale(calc((100vw - 20px) / 794));
-                -webkit-transform-origin: top left;
-                transform-origin: top left;
-                margin: 0;
-                /* Adjust the height of the container downward to match the scaled content so it doesn't leave huge whitespace below */
-                margin-bottom: calc(-100% * (1 - ((100vw - 20px) / 794)));
+            .document-container,
+            .a4-page {
+                width: 100% !important;
+                min-width: 320px;
+                height: auto;
+                min-height: unset !important;
+                padding: 15px !important;
+                margin: 0 auto;
+                box-sizing: border-box;
+                transform: none !important;
+                -webkit-transform: none !important;
+            }
+
+            .company-name {
+                font-size: 24px;
+            }
+
+            .doc-title {
+                font-size: 14px;
+                padding: 6px 15px;
+            }
+
+            th {
+                font-size: 9px;
+                padding: 4px 2px;
+            }
+
+            td {
+                font-size: 11px;
+                padding: 4px 2px;
+            }
+
+            .meta-input {
+                width: 100% !important;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .header-left,
+            .header-center,
+            .header-right {
+                flex-basis: auto;
+                width: 100%;
+                text-align: center;
+            }
+
+            .top-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .meta-item {
+                width: 100%;
             }
         }
 
