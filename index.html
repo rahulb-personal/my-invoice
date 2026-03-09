@@ -758,11 +758,10 @@
 
             .a4-page {
                 box-shadow: none !important;
-                page-break-after: always !important;
+                page-break-after: auto !important;
                 page-break-inside: avoid !important;
                 margin: 0 !important;
                 padding: 15mm 20mm !important;
-                min-height: 297mm !important;
                 width: 210mm !important;
                 display: block !important;
             }
@@ -906,7 +905,9 @@
 
             .document-container {
                 /* On narrow screens, calculate the scale factor needed to fit 210mm (approx 794px) into the viewport */
+                -webkit-transform: scale(calc((100vw - 20px) / 794));
                 transform: scale(calc((100vw - 20px) / 794));
+                -webkit-transform-origin: top left;
                 transform-origin: top left;
                 margin: 0;
                 /* Adjust the height of the container downward to match the scaled content so it doesn't leave huge whitespace below */
