@@ -782,19 +782,57 @@
                 page-break-after: always !important;
                 page-break-inside: avoid !important;
                 margin: 0 auto !important;
-                padding: 15mm 20mm !important;
+                padding: 15mm 20mm 25mm !important;
+                /* Extra bottom padding for footer */
                 width: 210mm !important;
                 min-height: 296.5mm !important;
-                /* Slightly less than 297mm to prevent bleed-over blank pages */
-                display: flex !important;
-                flex-direction: column !important;
+                display: block !important;
+                position: relative !important;
                 border: none !important;
                 background: white !important;
                 overflow: hidden !important;
                 box-sizing: border-box !important;
             }
 
+            .page-footer {
+                position: absolute !important;
+                bottom: 10mm !important;
+                left: 20mm !important;
+                right: 20mm !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            .page-total {
+                border-top: 1px solid #eee !important;
+                padding-top: 5px !important;
+                font-size: 11px !important;
+            }
+
+            .grand-total-container {
+                margin-top: 5px !important;
+                padding: 10px !important;
+                border: 2px solid #000 !important;
+                background: #f9f9f9 !important;
+            }
+
             .a4-page:last-child {
+                page-break-after: auto !important;
+            }
+
+            .header,
+            .top-row,
+            .title-container {
+                page-break-inside: avoid !important;
+            }
+
+            table {
+                page-break-inside: auto !important;
+            }
+
+            tr {
+                page-break-inside: avoid !important;
                 page-break-after: auto !important;
             }
 
@@ -1034,6 +1072,13 @@
         <!-- TOP NAV -->
         <nav class="topnav">
             <div class="topnav-title">Cloud9 Interiors<span>Invoice Manager</span></div>
+            <div id="server-status"
+                style="font-size:10px; color:var(--text-muted); margin-right:10px; display:flex; align-items:center; gap:8px">
+                <span style="width:8px; height:8px; border-radius:50%; background:#EF4444" id="status-dot"></span>
+                <span id="status-text">Server: Offline</span>
+                <button class="nav-btn" onclick="syncToGitHub()"
+                    style="padding:4px 10px; font-size:10px; height:auto; margin-left:10px">☁ Sync GitHub</button>
+            </div>
             <button class="nav-btn" id="backBtn" style="display:none" onclick="showDashboard()">← Back</button>
             <button class="nav-btn primary" id="newInvBtn" onclick="promptNewInvoice()">+ New Quotation</button>
         </nav>
@@ -1054,6 +1099,8 @@
                             Data</span></button>
                     <button class="edbtn edbtn-print" onclick="window.print()" title="Print">🖨 <span>Print /
                             PDF</span></button>
+                    <button class="edbtn edbtn-save" style="background:#ddd" onclick="exportStandaloneHTML()"
+                        title="Export File">📄 <span>Export HTML</span></button>
                     <button class="edbtn edbtn-reset" onclick="resetInvoice()" title="Reset">⚠ <span>Clear
                             All</span></button>
                 </div>
@@ -1087,7 +1134,7 @@
     <div class="toast" id="toast"></div>
 
     <!-- Hidden templates -->
-    <div id="templates" style="display:none">
+    <div id="templates" style="display:none" class="no-print">
         <div id="tpl-page" class="a4-page">
             <div class="page-content"></div>
             <div class="page-footer">
@@ -1179,8 +1226,8 @@
 
         <div id="tpl-grand-total">
             <div class="grand-total-container">
-                <div class="summary-lines"></div>
-                <div class="grand-total">GRAND TOTAL: ₹ <span id="masterTotal">0.00</span></div>
+                <div class="grand-total" style="margin:0; padding:0; border:none">GRAND TOTAL: ₹ <span
+                        class="master-total-text">0.00</span></div>
             </div>
         </div>
     </div>
@@ -1196,11 +1243,107 @@
         const PAGE_SAFE_HEIGHT = 880;
 
         // ── STORAGE ──
-        function loadFromStorage() {
-            try { invoices = JSON.parse(localStorage.getItem(DB_KEY)) || []; } catch (e) { invoices = []; }
+        async function loadFromStorage() {
+            // First try the local server API
+            try {
+                const res = await fetch('http://localhost:3000/api/list');
+                const data = await res.json();
+                invoices = data || [];
+                updateServerStatus(true);
+            } catch (e) {
+                // If server is offline (e.g. GitHub Pages), fallback to the relative manifest file
+                try {
+                    const res = await fetch('quotations/manifest.json');
+                    const data = await res.json();
+                    invoices = data || [];
+                    updateServerStatus(false);
+                } catch (err) {
+                    invoices = [];
+                    updateServerStatus(false);
+                }
+            }
         }
-        function saveToStorage() {
-            localStorage.setItem(DB_KEY, JSON.stringify(invoices));
+
+        async function saveToStorage() {
+            if (!currentId) return;
+            const inv = invoices.find(i => i.id === currentId);
+            if (!inv) return;
+
+            try {
+                const res = await fetch('http://localhost:3000/api/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(inv)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('✅ Saved to Disk & Code');
+                    updateServerStatus(true);
+                }
+            } catch (e) {
+                showToast('❌ Error: Start local server (start.bat)');
+                updateServerStatus(false);
+            }
+        }
+
+        async function syncToGitHub() {
+            showToast('🔄 Syncing to GitHub...');
+            try {
+                const res = await fetch('http://localhost:3000/api/sync', { method: 'POST' });
+                const result = await res.json();
+                if (result.success) showToast('🚀 Pushed to GitHub Successfully!');
+                else showToast('❌ Sync Error: Check Console');
+            } catch (e) {
+                showToast('❌ Server Offline');
+            }
+        }
+
+        async function checkServerStatus() {
+            try {
+                const res = await fetch('http://localhost:3000/api/status');
+                const data = await res.json();
+                updateServerStatus(data.status === 'online');
+            } catch (e) {
+                updateServerStatus(false);
+            }
+        }
+
+        function updateServerStatus(online) {
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            if (!dot || !text) return;
+            dot.style.background = online ? '#22C55E' : '#EF4444';
+            text.textContent = online ? 'Server: Active (Code Folder)' : 'Server: Offline (Connect Disk)';
+            text.style.color = online ? '#1A1A1A' : 'var(--text-muted)';
+        }
+
+        setInterval(checkServerStatus, 5000);
+        checkServerStatus();
+
+        async function exportStandaloneHTML() {
+            if (!currentId) {
+                showToast('Please save the document first');
+                return;
+            }
+            const inv = invoices.find(i => i.id === currentId);
+            if (!inv) return;
+
+            // Simple standalone wrapper
+            const fullHTML = `<!DOCTYPE html><html><head>${document.head.innerHTML}<style>@media print{.no-print-inv{display:none !important}}</style></head><body><div id="app"><div class="screen active" id="editor-screen" style="padding:0"><div class="editor-wrap"><div class="invoice-canvas">${document.getElementById('document-container').outerHTML}</div></div></div></div></body></html>`;
+
+            try {
+                const res = await fetch('http://localhost:3000/api/export', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: inv.name, html: fullHTML })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('✅ Exported to quotations/ folder');
+                }
+            } catch (e) {
+                showToast('❌ Server not running');
+            }
         }
 
         // ── DASHBOARD ──
@@ -1235,22 +1378,29 @@
     </div>`;
             }).join('');
         }
-        function deleteInvoice(id) {
-            if (!confirm('Are you certain you want to delete this invoice?')) return;
-            invoices = invoices.filter(i => i.id !== id);
-            saveToStorage();
-            renderDashboard();
-            showToast('Quotation Deleted');
+        async function deleteInvoice(id) {
+            if (!confirm('Are you certain you want to delete this invoice? It will be removed from disk too.')) return;
+            try {
+                await fetch('http://localhost:3000/api/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                invoices = invoices.filter(i => i.id !== id);
+                renderDashboard();
+                showToast('Quotation Deleted');
+            } catch (e) { showToast('❌ Delete failed (server offline)'); }
         }
+
         function renameInvoice(id) {
             const inv = invoices.find(i => i.id === id);
             if (!inv) return;
             const newName = prompt('Enter new name for this quotation:', inv.name);
             if (newName && newName.trim()) {
                 inv.name = newName.trim();
+                currentId = id; // temporarily set to save specific file
                 saveToStorage();
                 renderDashboard();
-                showToast('Quotation Renamed');
             }
         }
 
@@ -1269,15 +1419,31 @@
             showEditor();
             buildDOM();
         }
-        function editInvoice(id) {
-            const inv = invoices.find(i => i.id === id);
-            if (!inv) return;
-            currentId = id;
-            customerNameVal = inv.customerName || '';
-            dateVal = inv.date || '';
-            quotationData = JSON.parse(JSON.stringify(inv.data || DEFAULT_DATA));
-            showEditor();
-            buildDOM();
+        async function editInvoice(id) {
+            // Fetch full the data from the JSON file since the manifest only has metadata
+            try {
+                const res = await fetch(`quotations/${id}.json`);
+                const inv = await res.json();
+                currentId = id;
+                customerNameVal = inv.customerName || '';
+                dateVal = inv.date || '';
+                quotationData = JSON.parse(JSON.stringify(inv.data || DEFAULT_DATA));
+                showEditor();
+                buildDOM();
+            } catch (e) {
+                // If fetch fails, try to find it in the loaded invoices list (fallback)
+                const inv = invoices.find(i => i.id === id);
+                if (inv && inv.data) {
+                    currentId = id;
+                    customerNameVal = inv.customerName || '';
+                    dateVal = inv.date || '';
+                    quotationData = JSON.parse(JSON.stringify(inv.data || DEFAULT_DATA));
+                    showEditor();
+                    buildDOM();
+                } else {
+                    showToast('❌ Error: Could not load file from quotations/');
+                }
+            }
         }
 
         // ── SAVE FLOW ──
@@ -1334,35 +1500,64 @@
             const container = document.getElementById('document-container');
             container.innerHTML = '';
 
-            let page = createEmptyPage(1);
+            let pageNum = 1;
+            let page = createEmptyPage(pageNum);
             let content = page.querySelector('.page-content');
             container.appendChild(page);
 
-            let pageNum = 1;
-            quotationData.forEach((sec, si) => {
-                const secUI = createSectionDOM(sec.title, si);
-                sec.rows.forEach((r, ri) => secUI.querySelector('tbody').appendChild(createRowDOM(r, si, ri)));
-                content.appendChild(secUI);
+            // Stricter safety check for professional layout
+            // We want at least some rows before breaking
+            const MIN_ROWS_BEFORE_BREAK = 2;
 
-                // Overflow handling roughly mapped to screen calculation
-                if (content.getBoundingClientRect().height > PAGE_SAFE_HEIGHT && content.children.length > 1) {
-                    content.removeChild(secUI);
-                    pageNum++;
-                    page = createEmptyPage(pageNum);
-                    content = page.querySelector('.page-content');
-                    container.appendChild(page);
-                    content.appendChild(secUI);
-                }
+            quotationData.forEach((sec, si) => {
+                let currentSecUI = createSectionDOM(sec.title, si);
+                let currentTbody = currentSecUI.querySelector('tbody');
+                content.appendChild(currentSecUI);
+
+                sec.rows.forEach((r, ri) => {
+                    const rowDOM = createRowDOM(r, si, ri);
+                    currentTbody.appendChild(rowDOM);
+
+                    // Check for overflow
+                    if (content.offsetHeight > PAGE_SAFE_HEIGHT) {
+                        currentTbody.removeChild(rowDOM);
+
+                        // If we had no rows or very few rows, just move the whole section to start fresh on next page
+                        if (currentTbody.children.length < MIN_ROWS_BEFORE_BREAK) {
+                            content.removeChild(currentSecUI);
+                        }
+
+                        pageNum++;
+                        page = createEmptyPage(pageNum);
+                        content = page.querySelector('.page-content');
+                        container.appendChild(page);
+
+                        const suffix = currentTbody.children.length > 0 ? " (Cont.)" : "";
+                        currentSecUI = createSectionDOM(sec.title + suffix, si);
+                        currentTbody = currentSecUI.querySelector('tbody');
+                        content.appendChild(currentSecUI);
+                        currentTbody.appendChild(rowDOM);
+                    }
+                });
             });
 
-            const gt = document.getElementById('tpl-grand-total').cloneNode(true);
-            page.querySelector('.page-footer').appendChild(gt.firstElementChild);
+            // Footer pinning logic
+            const gt = document.getElementById('tpl-grand-total').firstElementChild.cloneNode(true);
+            page.querySelector('.page-footer').appendChild(gt);
 
-            document.querySelectorAll('.calc-input,.item-desc').forEach(el => el.addEventListener('input', debounce(syncAndCalc, 400)));
-            const nn = document.querySelector('.input-name');
-            const nd = document.querySelector('.input-date');
-            if (nn) { nn.value = customerNameVal; nn.addEventListener('input', e => { customerNameVal = e.target.value; if (currentId) debounceAutoSave(); }); }
-            if (nd) { nd.value = dateVal; nd.addEventListener('input', e => { dateVal = e.target.value; if (currentId) debounceAutoSave(); }); }
+            // Re-bind events
+            document.querySelectorAll('.calc-input,.item-desc').forEach(el => {
+                el.addEventListener('input', debounce(syncAndCalc, 400));
+            });
+
+            document.querySelectorAll('.input-name').forEach(el => {
+                el.value = customerNameVal;
+                el.oninput = (e) => { customerNameVal = e.target.value; if (currentId) debounceAutoSave(); };
+            });
+            document.querySelectorAll('.input-date').forEach(el => {
+                el.value = dateVal;
+                el.oninput = (e) => { dateVal = e.target.value; if (currentId) debounceAutoSave(); };
+            });
 
             calculateAll();
         }
@@ -1435,36 +1630,21 @@
 
         // ── CALCULATE ──
         function calculateAll() {
-            let grandTotal = 0;
-            const summaryLines = [];
-            document.querySelectorAll('.section-wrapper').forEach(sw => {
-                let secTotal = 0;
-                sw.querySelectorAll('.calc-row').forEach(tr => {
-                    const l = parseFloat(tr.querySelector('.l')?.value) || 0;
-                    const h = parseFloat(tr.querySelector('.h')?.value) || 0;
-                    const w = parseFloat(tr.querySelector('.w')?.value) || 0;
-                    const sqftEl = tr.querySelector('.sqft');
-                    let sqft = 0;
-                    if (w > 0) sqft = l * h * w; else if (h > 0) sqft = l * h; else sqft = l;
-                    if (sqftEl) sqftEl.value = sqft > 0 ? sqft.toFixed(2) : '';
-                    const price = parseFloat(tr.querySelector('.item-total')?.value) || 0;
-                    secTotal += price;
+            let total = 0;
+            document.querySelectorAll('.a4-page').forEach(pg => {
+                let pgSum = 0;
+                pg.querySelectorAll('.item-total').forEach(el => {
+                    pgSum += parseFloat(el.value) || 0;
                 });
-                grandTotal += secTotal;
-                const title = sw.querySelector('.section-title-input')?.value || 'Section';
-                summaryLines.push({ title, total: secTotal });
-                const pg = sw.closest('.a4-page');
-                if (pg) {
-                    let pgTotal = 0;
-                    pg.querySelectorAll('.item-total').forEach(el => pgTotal += parseFloat(el.value) || 0);
-                    const ps = pg.querySelector('.page-sum-text');
-                    if (ps) ps.textContent = pgTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                }
+                total += pgSum;
+                const ps = pg.querySelector('.page-sum-text');
+                if (ps) ps.textContent = pgSum.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             });
-            const masterEl = document.getElementById('masterTotal');
-            if (masterEl) masterEl.textContent = grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            const sumLines = document.querySelector('.summary-lines');
-            if (sumLines) sumLines.innerHTML = '';
+
+            // Update ALL master total spans (last page footer and any otros)
+            document.querySelectorAll('.master-total-text').forEach(el => {
+                el.textContent = total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            });
         }
 
         function autoSave() {
