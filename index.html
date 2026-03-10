@@ -732,6 +732,13 @@
         /* shown in editor */
 
         @media print {
+
+            .toast,
+            #saveModal,
+            #templates {
+                display: none !important;
+            }
+
             #app>*:not(#editor-screen) {
                 display: none !important
             }
@@ -1317,8 +1324,8 @@
             document.querySelectorAll('.calc-input,.item-desc').forEach(el => el.addEventListener('input', debounce(syncAndCalc, 400)));
             const nn = document.querySelector('.input-name');
             const nd = document.querySelector('.input-date');
-            if (nn) { nn.value = customerNameVal; nn.addEventListener('input', e => customerNameVal = e.target.value); }
-            if (nd) { nd.value = dateVal; nd.addEventListener('input', e => dateVal = e.target.value); }
+            if (nn) { nn.value = customerNameVal; nn.addEventListener('input', e => { customerNameVal = e.target.value; if (currentId) debounceAutoSave(); }); }
+            if (nd) { nd.value = dateVal; nd.addEventListener('input', e => { dateVal = e.target.value; if (currentId) debounceAutoSave(); }); }
 
             calculateAll();
         }
@@ -1351,23 +1358,23 @@
         // ── ROW / SECTION ACTIONS ──
         window.addSection = function () {
             quotationData.push({ title: 'New Section', rows: [{ desc: '', l: '', h: '', w: '', price: '' }] });
-            syncStateFromDOM(); buildDOM();
+            syncStateFromDOM(); buildDOM(); if (currentId) autoSave();
         };
         window.deleteSection = function (el) {
             const sw = el.closest('.section-wrapper');
             const si = parseInt(sw.dataset.secIdx);
             if (!isNaN(si)) quotationData.splice(si, 1);
-            syncStateFromDOM(); buildDOM();
+            syncStateFromDOM(); buildDOM(); if (currentId) autoSave();
         };
         window.addNewRow = function (btn) {
             const sw = btn.closest('.section-wrapper');
             const si = parseInt(sw.dataset.secIdx);
-            if (!isNaN(si)) { syncStateFromDOM(); quotationData[si].rows.push({ desc: '', l: '', h: '', w: '', price: '' }); buildDOM(); }
+            if (!isNaN(si)) { syncStateFromDOM(); quotationData[si].rows.push({ desc: '', l: '', h: '', w: '', price: '' }); buildDOM(); if (currentId) autoSave(); }
         };
         window.deleteRow = function (el) {
             const tr = el.closest('tr');
             const si = parseInt(tr.dataset.secIdx), ri = parseInt(tr.dataset.rowIdx);
-            if (!isNaN(si) && !isNaN(ri)) { syncStateFromDOM(); quotationData[si].rows.splice(ri, 1); buildDOM(); }
+            if (!isNaN(si) && !isNaN(ri)) { syncStateFromDOM(); quotationData[si].rows.splice(ri, 1); buildDOM(); if (currentId) autoSave(); }
         };
 
         // ── SYNC STATE FROM DOM ──
@@ -1423,8 +1430,24 @@
             if (sumLines) sumLines.innerHTML = summaryLines.map(s => `<div>${s.title}: ₹${s.total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>`).join('');
         }
 
-        function syncAndCalc() { syncStateFromDOM(); buildDOM(); }
+        function autoSave() {
+            if (currentId) {
+                const idx = invoices.findIndex(i => i.id === currentId);
+                if (idx > -1) {
+                    invoices[idx] = { ...invoices[idx], customerName: customerNameVal, date: dateVal, amount: 0, data: JSON.parse(JSON.stringify(quotationData)), savedAt: Date.now() };
+                    saveToStorage();
+                }
+            }
+        }
+
         function debounce(fn, d) { let t; return function () { clearTimeout(t); t = setTimeout(() => fn.apply(this, arguments), d); }; }
+        const debounceAutoSave = debounce(autoSave, 1000);
+
+        function syncAndCalc() {
+            syncStateFromDOM();
+            calculateAll();
+            if (currentId) debounceAutoSave();
+        }
 
         function resetInvoice() {
             if (!confirm('Clear all data on this document? This cannot be undone.')) return;
