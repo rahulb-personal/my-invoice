@@ -1332,7 +1332,7 @@
             });
 
             const gt = document.getElementById('tpl-grand-total').cloneNode(true);
-            content.appendChild(gt.firstElementChild);
+            page.querySelector('.page-footer').appendChild(gt.firstElementChild);
 
             document.querySelectorAll('.calc-input,.item-desc').forEach(el => el.addEventListener('input', debounce(syncAndCalc, 400)));
             const nn = document.querySelector('.input-name');
