@@ -734,12 +734,16 @@
         @media print {
 
             html,
-            body,
+            body {
+                height: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #FFF !important;
+            }
+
             #app {
                 height: auto !important;
                 min-height: 0 !important;
-                margin: 0 !important;
-                padding: 0 !important;
                 overflow: visible !important;
             }
 
@@ -775,15 +779,23 @@
 
             .a4-page {
                 box-shadow: none !important;
-                page-break-after: auto !important;
+                page-break-after: always !important;
                 page-break-inside: avoid !important;
-                margin: 0 !important;
+                margin: 0 auto !important;
                 padding: 15mm 20mm !important;
                 width: 210mm !important;
-                display: block !important;
-                min-height: 0 !important;
-                height: max-content !important;
+                min-height: 296.5mm !important;
+                /* Slightly less than 297mm to prevent bleed-over blank pages */
+                display: flex !important;
+                flex-direction: column !important;
                 border: none !important;
+                background: white !important;
+                overflow: hidden !important;
+                box-sizing: border-box !important;
+            }
+
+            .a4-page:last-child {
+                page-break-after: auto !important;
             }
 
             .no-print-inv {
