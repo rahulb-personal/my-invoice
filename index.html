@@ -733,6 +733,16 @@
 
         @media print {
 
+            html,
+            body,
+            #app {
+                height: auto !important;
+                min-height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
+            }
+
             .toast,
             #saveModal,
             #templates {
@@ -771,10 +781,13 @@
                 padding: 15mm 20mm !important;
                 width: 210mm !important;
                 display: block !important;
+                min-height: 0 !important;
+                height: max-content !important;
+                border: none !important;
             }
 
             .no-print-inv {
-                display: none !important
+                display: none !important;
             }
 
             * {
