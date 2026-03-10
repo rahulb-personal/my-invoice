@@ -1216,6 +1216,7 @@
         <div class="inv-date">${saved}</div>
       </div>
       <div class="inv-actions" onclick="event.stopPropagation()">
+        <div class="ic-btn" title="Rename" onclick="renameInvoice('${inv.id}')">🏷️</div>
         <div class="ic-btn" title="Edit" onclick="editInvoice('${inv.id}')">✏️</div>
         <div class="ic-btn del-act" title="Delete" onclick="deleteInvoice('${inv.id}')">🗑</div>
       </div>
@@ -1228,6 +1229,17 @@
             saveToStorage();
             renderDashboard();
             showToast('Quotation Deleted');
+        }
+        function renameInvoice(id) {
+            const inv = invoices.find(i => i.id === id);
+            if (!inv) return;
+            const newName = prompt('Enter new name for this quotation:', inv.name);
+            if (newName && newName.trim()) {
+                inv.name = newName.trim();
+                saveToStorage();
+                renderDashboard();
+                showToast('Quotation Renamed');
+            }
         }
 
         // ── EDITOR ──
