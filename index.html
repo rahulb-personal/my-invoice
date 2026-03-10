@@ -1206,6 +1206,14 @@
                 <button class="mbtn mbtn-cancel" onclick="closeSettings()">Cancel</button>
                 <button class="mbtn mbtn-ok" onclick="saveSettings()">Save Configuration</button>
             </div>
+            <div style="margin-top:20px; padding-top:15px; border-top:1px solid var(--border-light)">
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:8px">Painless Sync (Multiple
+                    Devices)</label>
+                <button class="edbtn" style="width:100%; justify-content:center" onclick="shareSetupLink()">🔗 Share
+                    One-Click Setup Link</button>
+                <p style="font-size:10px; margin-top:8px; color:var(--text-muted)">Send this link to your phone once to
+                    instantly configure it without typing the token.</p>
+            </div>
             <p style="font-size:10px; margin-top:15px; color:var(--text-muted)">Tokens are stored locally in your
                 browser only.</p>
         </div>
@@ -1317,6 +1325,48 @@
         let customerNameVal = '';
         let dateVal = '';
         const PAGE_SAFE_HEIGHT = 880;
+
+        // ── PAINLESS SYNC ──
+        function shareSetupLink() {
+            if (!ghToken) { alert('Please save a token first!'); return; }
+            const config = { t: ghToken, r: ghRepo };
+            const encoded = btoa(JSON.stringify(config));
+            const url = `${window.location.protocol}//${window.location.host}${window.location.pathname}#setup=${encoded}`;
+
+            // Try to use native sharing if available (mobile focus)
+            if (navigator.share) {
+                navigator.share({ title: 'C9 Invoice Setup', text: 'One-click setup for your Invoice Manager', url })
+                    .catch(() => { copyToClipboard(url); });
+            } else {
+                copyToClipboard(url);
+                alert('Setup Link Copied! Send this link to your other devices.');
+            }
+        }
+        function copyToClipboard(text) {
+            const el = document.createElement('textarea');
+            el.value = text; document.body.appendChild(el);
+            el.select(); document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast('✅ Setup Link Copied');
+        }
+        function handleAutoConfig() {
+            const hash = window.location.hash;
+            if (hash.startsWith('#setup=')) {
+                try {
+                    const encoded = hash.split('=')[1];
+                    const config = JSON.parse(atob(encoded));
+                    if (config.t && config.r) {
+                        ghToken = config.t;
+                        ghRepo = config.r;
+                        localStorage.setItem('gh_token', ghToken);
+                        localStorage.setItem('gh_repo', ghRepo);
+                        window.location.hash = ''; // Clear hash
+                        showToast('🚀 Auto-Configured Successfully!');
+                        loadFromStorage();
+                    }
+                } catch (e) { console.error('Auto-config failed', e); }
+            }
+        }
 
         // ── GITHUB CONFIG ──
         let ghToken = localStorage.getItem('gh_token') || '';
@@ -1616,8 +1666,8 @@
             container.appendChild(page);
 
             // Stricter safety check for professional layout
-            // We want at least some rows before breaking
-            const MIN_ROWS_BEFORE_BREAK = 2;
+            // If a section starts near the bottom, we want at least 2 rows or move it.
+            const MIN_ROWS_FOR_SECTION_START = 2;
 
             quotationData.forEach((sec, si) => {
                 let currentSecUI = createSectionDOM(sec.title, si);
@@ -1628,12 +1678,12 @@
                     const rowDOM = createRowDOM(r, si, ri);
                     currentTbody.appendChild(rowDOM);
 
-                    // Check for overflow
-                    if (content.offsetHeight > PAGE_SAFE_HEIGHT) {
+                    // Check for physical overflow
+                    if (content.scrollHeight > PAGE_SAFE_HEIGHT) {
                         currentTbody.removeChild(rowDOM);
 
-                        // If we had no rows or very few rows, just move the whole section to start fresh on next page
-                        if (currentTbody.children.length < MIN_ROWS_BEFORE_BREAK) {
+                        // If the section only had very few rows, move the whole section to next page
+                        if (currentTbody.children.length < MIN_ROWS_FOR_SECTION_START) {
                             content.removeChild(currentSecUI);
                         }
 
@@ -1655,11 +1705,12 @@
             const gt = document.getElementById('tpl-grand-total').firstElementChild.cloneNode(true);
             page.querySelector('.page-footer').appendChild(gt);
 
-            // Re-bind events
+            // Re-bind events to all inputs on all pages
             document.querySelectorAll('.calc-input,.item-desc').forEach(el => {
                 el.addEventListener('input', debounce(syncAndCalc, 400));
             });
 
+            // Sync top-level fields across all pages
             document.querySelectorAll('.input-name').forEach(el => {
                 el.value = customerNameVal;
                 el.oninput = (e) => { customerNameVal = e.target.value; if (currentId) debounceAutoSave(); };
@@ -1805,6 +1856,7 @@
         if (new URLSearchParams(location.search).get('new') === '1') setTimeout(promptNewInvoice, 300);
 
         // ── INIT ──
+        handleAutoConfig();
         loadFromStorage();
         renderDashboard();
     </script>
