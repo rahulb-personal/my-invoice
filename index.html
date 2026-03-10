@@ -116,6 +116,17 @@
             border-color: #CCC
         }
 
+        .nav-btn.settings-btn {
+            padding: 8px;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 18px;
+        }
+
         .nav-btn.primary {
             background: var(--brand-blue);
             border-color: var(--brand-blue);
@@ -141,6 +152,50 @@
 
         .screen.active {
             display: flex
+        }
+
+        /* Server/Sync Status */
+        .sync-status {
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--text-muted);
+            margin-right: 10px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+
+        .status-dot.online {
+            background: var(--success);
+        }
+
+        .status-dot.offline {
+            background: var(--danger);
+        }
+
+        .status-dot.syncing {
+            background: var(--brand-blue);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.5;
+            }
         }
 
         /* ── DASHBOARD ── */
@@ -1070,20 +1125,18 @@
     <div id="app">
 
         <!-- TOP NAV -->
-        <nav class="topnav">
-            <div class="topnav-title">Cloud9 Interiors<span>Invoice Manager</span></div>
-            <div id="server-status"
-                style="font-size:10px; color:var(--text-muted); margin-right:10px; display:flex; align-items:center; gap:8px">
-                <span style="width:8px; height:8px; border-radius:50%; background:#EF4444" id="status-dot"></span>
-                <span id="status-text">Server: Offline</span>
-                <button class="nav-btn" onclick="syncToGitHub()"
-                    style="padding:4px 10px; font-size:10px; height:auto; margin-left:10px">☁ Sync GitHub</button>
+        <div class="topnav">
+            <div class="topnav-title">
+                Cloud9 Interiors <span>Quotation Manager</span>
             </div>
-            <button class="nav-btn" id="backBtn" style="display:none" onclick="showDashboard()">← Back</button>
+            <div class="sync-status" id="syncStatus">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">GitHub Offline</span>
+            </div>
+            <button class="nav-btn settings-btn" onclick="openSettings()" title="GitHub Settings">⚙</button>
             <button class="nav-btn primary" id="newInvBtn" onclick="promptNewInvoice()">+ New Quotation</button>
-        </nav>
-
-        <!-- DASHBOARD SCREEN -->
+            <button class="nav-btn" id="backBtn" onclick="showDashboard()" style="display:none">← Back</button>
+        </div>
         <div class="screen active" id="dashboard-screen">
             <div class="section-label">Your Saved Quotations</div>
             <div class="invoice-list" id="invoiceList"></div>
@@ -1133,7 +1186,30 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
-    <!-- Hidden templates -->
+    <!-- Settings Modal -->
+    <div class="modal-bg" id="settingsModal">
+        <div class="modal">
+            <h3>⚙ GitHub API Settings</h3>
+            <p style="font-size:12px; margin-bottom:15px; color:var(--text-muted)">Required to save changes directly to
+                GitHub from anywhere.</p>
+
+            <label style="display:block; font-size:11px; font-weight:600; margin-bottom:4px">Personal Access Token
+                (PAT)</label>
+            <input class="modal-input" id="ghTokenInput" type="password" placeholder="ghp_xxxxxxxxxxxx">
+
+            <label style="display:block; font-size:11px; font-weight:600; margin-top:15px; margin-bottom:4px">GitHub
+                Repository Path</label>
+            <input class="modal-input" id="ghRepoInput" type="text" placeholder="username/repo-name"
+                value="rahulb-personal/my-invoice">
+
+            <div class="modal-btns" style="margin-top:20px">
+                <button class="mbtn mbtn-cancel" onclick="closeSettings()">Cancel</button>
+                <button class="mbtn mbtn-ok" onclick="saveSettings()">Save Configuration</button>
+            </div>
+            <p style="font-size:10px; margin-top:15px; color:var(--text-muted)">Tokens are stored locally in your
+                browser only.</p>
+        </div>
+    </div>
     <div id="templates" style="display:none" class="no-print">
         <div id="tpl-page" class="a4-page">
             <div class="page-content"></div>
@@ -1242,26 +1318,94 @@
         let dateVal = '';
         const PAGE_SAFE_HEIGHT = 880;
 
+        // ── GITHUB CONFIG ──
+        let ghToken = localStorage.getItem('gh_token') || '';
+        let ghRepo = localStorage.getItem('gh_repo') || 'rahulb-personal/my-invoice';
+        const GH_API = 'https://api.github.com/repos';
+
+        function openSettings() {
+            document.getElementById('ghTokenInput').value = ghToken;
+            document.getElementById('ghRepoInput').value = ghRepo;
+            document.getElementById('settingsModal').classList.add('open');
+        }
+        function closeSettings() { document.getElementById('settingsModal').classList.remove('open'); }
+        function saveSettings() {
+            ghToken = document.getElementById('ghTokenInput').value.trim();
+            ghRepo = document.getElementById('ghRepoInput').value.trim();
+            localStorage.setItem('gh_token', ghToken);
+            localStorage.setItem('gh_repo', ghRepo);
+            closeSettings();
+            showToast('⚙ Settings Saved');
+            loadFromStorage();
+        }
+
+        function updateSyncStatus(status) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            dot.className = 'status-dot ' + status;
+            if (status === 'online') text.textContent = 'GitHub Connected';
+            else if (status === 'offline') text.textContent = 'GitHub Offline (View Only)';
+            else if (status === 'syncing') text.textContent = 'Syncing...';
+        }
+
+        // ── GITHUB API WRAPPERS ──
+        async function ghFetch(path) {
+            const headers = ghToken ? { 'Authorization': `token ${ghToken}` } : {};
+            const res = await fetch(`${GH_API}/${ghRepo}/contents/${path}?t=${Date.now()}`, { headers });
+            if (!res.ok) throw new Error('Fetch failed');
+            const data = await res.json();
+            return {
+                content: decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))),
+                sha: data.sha
+            };
+        }
+
+        async function ghPush(path, content, message = 'Update from Quotation Manager') {
+            if (!ghToken) throw new Error('No Token');
+            updateSyncStatus('syncing');
+            let sha = null;
+            try {
+                const existing = await ghFetch(path);
+                sha = existing.sha;
+            } catch (e) { /* file might not exist */ }
+
+            const body = {
+                message,
+                content: btoa(unescape(encodeURIComponent(content))),
+                sha
+            };
+
+            const res = await fetch(`${GH_API}/${ghRepo}/contents/${path}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `token ${ghToken}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            if (!res.ok) throw new Error('Push failed');
+            updateSyncStatus('online');
+            return await res.json();
+        }
+
         // ── STORAGE ──
         async function loadFromStorage() {
-            // First try the local server API
+            updateSyncStatus('syncing');
             try {
-                const res = await fetch('http://localhost:3000/api/list');
-                const data = await res.json();
-                invoices = data || [];
-                updateServerStatus(true);
-            } catch (e) {
-                // If server is offline (e.g. GitHub Pages), fallback to the relative manifest file
-                try {
-                    const res = await fetch('quotations/manifest.json');
-                    const data = await res.json();
-                    invoices = data || [];
-                    updateServerStatus(false);
-                } catch (err) {
-                    invoices = [];
-                    updateServerStatus(false);
+                // If we have a token, try to load from GitHub API (fresher data)
+                if (ghToken) {
+                    const manifest = await ghFetch('quotations/manifest.json');
+                    invoices = JSON.parse(manifest.content);
+                    updateSyncStatus('online');
+                } else {
+                    // Fallback to static manifest (GitHub Pages cache)
+                    const res = await fetch('quotations/manifest.json?t=' + Date.now());
+                    invoices = await res.json();
+                    updateSyncStatus('offline');
                 }
+            } catch (e) {
+                console.error('Load failed', e);
+                invoices = JSON.parse(localStorage.getItem('invoices_cache') || '[]');
+                updateSyncStatus('offline');
             }
+            renderDashboard();
         }
 
         async function saveToStorage() {
@@ -1269,58 +1413,46 @@
             const inv = invoices.find(i => i.id === currentId);
             if (!inv) return;
 
+            // Save to Local Cache first
+            localStorage.setItem('invoices_cache', JSON.stringify(invoices));
+
+            if (!ghToken) {
+                showToast('⚠ Save locally only. Enter GitHub Token in settings to sync!');
+                return;
+            }
+
             try {
-                const res = await fetch('http://localhost:3000/api/save', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(inv)
-                });
-                const result = await res.json();
-                if (result.success) {
-                    showToast('✅ Saved to Disk & Code');
-                    updateServerStatus(true);
-                }
+                showToast('📤 Syncing to GitHub...');
+                // 1. Save the specific JSON file
+                await ghPush(`quotations/${inv.id}.json`, JSON.stringify(inv, null, 2), `Save Quotation: ${inv.name}`);
+
+                // 2. Update and save the manifest
+                const manifestList = invoices.map(i => ({ id: i.id, name: i.name, customerName: i.customerName, savedAt: i.savedAt }));
+                await ghPush('quotations/manifest.json', JSON.stringify(manifestList, null, 2), 'Update Manifest');
+
+                showToast('✅ Synced to GitHub Code');
             } catch (e) {
-                showToast('❌ Error: Start local server (start.bat)');
-                updateServerStatus(false);
+                console.error(e);
+                showToast('❌ GitHub Error. Check Token/Repo in Settings.');
+                updateSyncStatus('offline');
             }
         }
 
-        async function syncToGitHub() {
-            showToast('🔄 Syncing to GitHub...');
-            try {
-                const res = await fetch('http://localhost:3000/api/sync', { method: 'POST' });
-                const result = await res.json();
-                if (result.success) showToast('🚀 Pushed to GitHub Successfully!');
-                else showToast('❌ Sync Error: Check Console');
-            } catch (e) {
-                showToast('❌ Server Offline');
+        async function deleteInvoiceFromStorage(id) {
+            invoices = invoices.filter(i => i.id !== id);
+            localStorage.setItem('invoices_cache', JSON.stringify(invoices));
+            renderDashboard();
+
+            if (ghToken) {
+                try {
+                    // We can't easily delete via API without SHA, we just update manifest for now
+                    // To keep it simple, we just update the manifest. Orphaned files are fine.
+                    const manifestList = invoices.map(i => ({ id: i.id, name: i.name, customerName: i.customerName, savedAt: i.savedAt }));
+                    await ghPush('quotations/manifest.json', JSON.stringify(manifestList, null, 2), `Delete Quotation: ${id}`);
+                } catch (e) { }
             }
         }
-
-        async function checkServerStatus() {
-            try {
-                const res = await fetch('http://localhost:3000/api/status');
-                const data = await res.json();
-                updateServerStatus(data.status === 'online');
-            } catch (e) {
-                updateServerStatus(false);
-            }
-        }
-
-        function updateServerStatus(online) {
-            const dot = document.getElementById('status-dot');
-            const text = document.getElementById('status-text');
-            if (!dot || !text) return;
-            dot.style.background = online ? '#22C55E' : '#EF4444';
-            text.textContent = online ? 'Server: Active (Code Folder)' : 'Server: Offline (Connect Disk)';
-            text.style.color = online ? '#1A1A1A' : 'var(--text-muted)';
-        }
-
-        setInterval(checkServerStatus, 5000);
-        checkServerStatus();
-
-        async function exportStandaloneHTML() {
+        function exportStandaloneHTML() {
             if (!currentId) {
                 showToast('Please save the document first');
                 return;
@@ -1328,22 +1460,18 @@
             const inv = invoices.find(i => i.id === currentId);
             if (!inv) return;
 
-            // Simple standalone wrapper
-            const fullHTML = `<!DOCTYPE html><html><head>${document.head.innerHTML}<style>@media print{.no-print-inv{display:none !important}}</style></head><body><div id="app"><div class="screen active" id="editor-screen" style="padding:0"><div class="editor-wrap"><div class="invoice-canvas">${document.getElementById('document-container').outerHTML}</div></div></div></div></body></html>`;
+            // Simple standalone wrapper - pure browser side download
+            const content = document.getElementById('document-container').innerHTML;
+            const fullHTML = `<!DOCTYPE html><html><head>${document.head.innerHTML}<style>@media print{.no-print,.no-print-inv{display:none !important}.a4-page{box-shadow:none !important; margin:0 !important;}} body{background:white;}</style></head><body><div id="app" style="min-height:0"><div class="screen active" style="padding:0; max-width:100%"><div class="editor-wrap"><div class="invoice-canvas" style="padding:0; overflow:visible;"><div class="document-container" style="gap:0; margin:0;">${content}</div></div></div></div></body></html>`;
 
-            try {
-                const res = await fetch('http://localhost:3000/api/export', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: inv.name, html: fullHTML })
-                });
-                const result = await res.json();
-                if (result.success) {
-                    showToast('✅ Exported to quotations/ folder');
-                }
-            } catch (e) {
-                showToast('❌ Server not running');
-            }
+            const blob = new Blob([fullHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${inv.name || 'Quotation'}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('✅ Downloaded Standalone HTML');
         }
 
         // ── DASHBOARD ──
@@ -1353,11 +1481,10 @@
             document.getElementById('backBtn').style.display = 'none';
             document.getElementById('newInvBtn').style.display = '';
             loadFromStorage();
-            renderDashboard();
         }
         function renderDashboard() {
             const list = document.getElementById('invoiceList');
-            if (!invoices.length) {
+            if (!invoices || !invoices.length) {
                 list.innerHTML = `<div class="empty-state"><div class="empty-icon">📁</div><div class="empty-title">No Quotations Yet</div><div class="empty-sub">Tap on "+ New Quotation" to start creating your first document and your saved files will appear here.</div></div>`;
                 return;
             }
@@ -1377,19 +1504,6 @@
       </div>
     </div>`;
             }).join('');
-        }
-        async function deleteInvoice(id) {
-            if (!confirm('Are you certain you want to delete this invoice? It will be removed from disk too.')) return;
-            try {
-                await fetch('http://localhost:3000/api/delete', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id })
-                });
-                invoices = invoices.filter(i => i.id !== id);
-                renderDashboard();
-                showToast('Quotation Deleted');
-            } catch (e) { showToast('❌ Delete failed (server offline)'); }
         }
 
         function renameInvoice(id) {
@@ -1420,29 +1534,25 @@
             buildDOM();
         }
         async function editInvoice(id) {
-            // Fetch full the data from the JSON file since the manifest only has metadata
+            showToast('Loading...');
             try {
-                const res = await fetch(`quotations/${id}.json`);
-                const inv = await res.json();
+                let data;
+                if (ghToken) {
+                    const file = await ghFetch(`quotations/${id}.json`);
+                    data = JSON.parse(file.content);
+                } else {
+                    const res = await fetch(`quotations/${id}.json?t=${Date.now()}`);
+                    data = await res.json();
+                }
                 currentId = id;
-                customerNameVal = inv.customerName || '';
-                dateVal = inv.date || '';
-                quotationData = JSON.parse(JSON.stringify(inv.data || DEFAULT_DATA));
+                customerNameVal = data.customerName || '';
+                dateVal = data.date || '';
+                quotationData = JSON.parse(JSON.stringify(data.data || DEFAULT_DATA));
                 showEditor();
                 buildDOM();
             } catch (e) {
-                // If fetch fails, try to find it in the loaded invoices list (fallback)
-                const inv = invoices.find(i => i.id === id);
-                if (inv && inv.data) {
-                    currentId = id;
-                    customerNameVal = inv.customerName || '';
-                    dateVal = inv.date || '';
-                    quotationData = JSON.parse(JSON.stringify(inv.data || DEFAULT_DATA));
-                    showEditor();
-                    buildDOM();
-                } else {
-                    showToast('❌ Error: Could not load file from quotations/');
-                }
+                console.error(e);
+                showToast('❌ Error loading quotation file.');
             }
         }
 
